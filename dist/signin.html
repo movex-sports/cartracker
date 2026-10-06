@@ -1,0 +1,362 @@
+﻿<!doctype html>
+<html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none" data-preloader="disable" data-theme="default" data-theme-colors="default">
+
+<head>
+
+    <meta charset="utf-8" />
+    <title>Signin | MOVEX SPORTS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
+    <meta content="Themesbrand" name="author" />
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="assets/images/favicon.ico">
+
+    <!-- Layout config Js -->
+    <script src="assets/js/layout.js"></script>
+    <!-- Bootstrap Css -->
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <!-- Icons Css -->
+    <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <!-- App Css-->
+    <link href="assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <!-- custom Css-->
+    <link href="assets/css/custom.min.css" rel="stylesheet" type="text/css" />
+    <style>
+        :root {
+            --signin-bg: #06101d;
+            --signin-panel: rgba(7, 19, 34, 0.92);
+            --signin-border: rgba(104, 240, 193, 0.16);
+            --signin-text: #e7eef8;
+            --signin-muted: #9bb0ca;
+            --signin-accent: #68f0c1;
+            --signin-accent-2: #3aa0ff;
+        }
+
+        body {
+            min-height: 100vh;
+            color: var(--signin-text);
+            background:
+                radial-gradient(circle at 12% 12%, rgba(58, 160, 255, 0.2), transparent 26%),
+                radial-gradient(circle at 82% 20%, rgba(104, 240, 193, 0.14), transparent 22%),
+                linear-gradient(145deg, #020814 0%, #07101d 44%, #02070f 100%);
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(104, 240, 193, 0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(58, 160, 255, 0.035) 1px, transparent 1px);
+            background-size: 72px 72px;
+            mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.32), transparent 90%);
+            z-index: 0;
+        }
+
+        .auth-page-wrapper {
+            position: relative;
+            min-height: 100vh;
+            padding-top: 0 !important;
+            overflow: hidden;
+            background:
+                linear-gradient(90deg, rgba(2, 8, 20, 0.96) 0%, rgba(2, 8, 20, 0.86) 48%, rgba(2, 8, 20, 0.58) 100%),
+                url("assets/images/mapa%20de%20calor.png") center right / cover no-repeat;
+        }
+
+        .auth-one-bg-position {
+            display: none;
+        }
+
+        .auth-page-content {
+            position: relative;
+            z-index: 1;
+            min-height: calc(100vh - 72px);
+            display: flex;
+            align-items: center;
+            padding: 56px 0 32px;
+        }
+
+        .auth-codex-shell {
+            display: grid;
+            grid-template-columns: minmax(0, 1.05fr) minmax(360px, 460px);
+            gap: 42px;
+            align-items: center;
+        }
+
+        .auth-brand {
+            display: inline-flex;
+            align-items: center;
+            color: #fff;
+        }
+
+        .auth-brand-logo {
+            width: 300px;
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .auth-hero {
+            transform: translateY(-42px);
+        }
+
+        .auth-hero-title {
+            max-width: 720px;
+            margin: 24px 0 0;
+            color: #fff;
+            font-size: clamp(2.35rem, 4vw, 4rem);
+            line-height: 1.04;
+            font-weight: 800;
+        }
+
+        .auth-hero-title span {
+            color: #fff;
+        }
+
+        .auth-hero-copy {
+            max-width: 660px;
+            margin-top: 18px;
+            color: #bdd0e6;
+            font-size: 1.04rem;
+            line-height: 1.68;
+        }
+
+        .auth-card {
+            border: 1px solid rgba(73, 175, 255, 0.16);
+            border-radius: 26px;
+            background: linear-gradient(180deg, rgba(7, 19, 34, 0.96), rgba(3, 12, 24, 0.94));
+            box-shadow: 0 34px 90px rgba(0, 0, 0, 0.32);
+            backdrop-filter: blur(24px);
+            overflow: hidden;
+        }
+
+        .auth-card .card-body {
+            padding: 34px !important;
+        }
+
+        .auth-card h5 {
+            color: #fff !important;
+            font-size: 1.35rem;
+        }
+
+        .auth-card .text-muted,
+        .auth-card .form-label {
+            color: var(--signin-muted) !important;
+        }
+
+        .auth-card .form-control {
+            min-height: 46px;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.055);
+        }
+
+        .auth-card .form-control::placeholder {
+            color: rgba(211, 225, 241, 0.58);
+        }
+
+        .auth-card .form-control:focus {
+            color: #fff;
+            border-color: rgba(104, 240, 193, 0.42);
+            background: rgba(255, 255, 255, 0.075);
+            box-shadow: 0 0 0 0.18rem rgba(104, 240, 193, 0.12);
+        }
+
+        .auth-card .btn-success {
+            min-height: 48px;
+            border: 0;
+            border-radius: 12px;
+            color: #04101c;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4df2bf, #7af0ff);
+            box-shadow: 0 16px 34px rgba(77, 242, 191, 0.18);
+        }
+
+        .auth-card .btn-icon {
+            border-radius: 12px;
+        }
+
+        .auth-alert {
+            display: none;
+            border: 1px solid rgba(255, 122, 122, 0.22);
+            border-radius: 12px;
+            color: #ffd6d6;
+            background: rgba(255, 81, 81, 0.1);
+        }
+
+        .auth-card a {
+            color: #bfeee5;
+        }
+
+        .auth-card a:hover {
+            color: var(--signin-accent);
+        }
+
+        .footer {
+            position: relative;
+            z-index: 1;
+            height: 72px;
+            color: rgba(231, 238, 248, 0.6);
+            background: transparent;
+        }
+
+        .footer .text-muted {
+            color: rgba(231, 238, 248, 0.6) !important;
+        }
+
+        @media (max-width: 991.98px) {
+            .auth-page-wrapper {
+                background-position: center;
+            }
+
+            .auth-page-content {
+                padding-top: 34px;
+            }
+
+            .auth-codex-shell {
+                grid-template-columns: 1fr;
+                gap: 28px;
+            }
+
+            .auth-hero {
+                text-align: center;
+                transform: none;
+            }
+
+            .auth-brand {
+                justify-content: center;
+            }
+
+            .auth-hero-copy {
+                margin-inline: auto;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .auth-page-content {
+                padding: 24px 0 18px;
+            }
+
+            .auth-hero-title {
+                font-size: 2.2rem;
+            }
+
+            .auth-card .card-body {
+                padding: 24px !important;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="auth-page-wrapper pt-5">
+        <!-- auth page bg -->
+        <div class="auth-one-bg-position auth-one-bg" id="auth-particles">
+            <div class="bg-success"></div>
+
+            <div class="shape">
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1440 120">
+                    <path d="M 0,36 C 144,53.6 432,123.2 720,124 C 1008,124.8 1296,56.8 1440,40L1440 140L0 140z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <!-- auth page content -->
+        <div class="auth-page-content">
+            <div class="container">
+                <div class="auth-codex-shell">
+                    <div class="auth-hero">
+                        <a href="landing.html" class="auth-brand text-decoration-none">
+                            <img class="auth-brand-logo" src="assets/images/logo-dark.png" alt="MOVEX SPORTS">
+                        </a>
+
+                        <h1 class="auth-hero-title">MOVEX SPORTS<br>A Intelig&ecirc;ncia que <span>Eleva o Jogo</span></h1>
+                        <p class="auth-hero-copy">
+                            Tecnologia GPS de ponta para atletas, escolas e centros esportivos que buscam performance profissional.
+                        </p>
+                        <p class="auth-hero-copy">
+                            Torne cada treino e jogo da sua equipe uma experi&ecirc;ncia profissional
+                        </p>
+
+                    </div>
+
+                    <div>
+                        <div class="card auth-card mb-0">
+
+                            <div class="card-body p-4">
+                                <div class="text-center mt-2">
+                                    <h5 class="text-primary">Bem-vindo de volta</h5>
+                                    <p class="text-muted">Entre para continuar na plataforma MOVEX.</p>
+                                </div>
+                                <div class="p-2 mt-4">
+                                    <form id="login-form">
+
+                                        <div class="mb-3">
+                                            <label for="username" class="form-label">Usuario</label>
+                                            <input type="text" class="form-control" id="username" name="login" placeholder="Digite seu usuario" autocomplete="username" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label" for="password-input">Senha</label>
+                                            <div class="position-relative auth-pass-inputgroup mb-3">
+                                                <input type="password" class="form-control pe-5 password-input" placeholder="Digite sua senha" id="password-input" name="senha" autocomplete="current-password" required>
+                                                <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon material-shadow-none" type="button" id="password-addon"><i class="ri-eye-fill align-middle"></i></button>
+                                            </div>
+                                        </div>
+
+                                        <div class="auth-alert p-3 mb-3" id="login-alert" role="alert"></div>
+
+                                        <div class="mt-4">
+                                            <button class="btn btn-success w-100" type="submit" id="login-submit">Entrar na plataforma</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <!-- end card body -->
+                        </div>
+                        <!-- end card -->
+
+                    </div>
+                </div>
+            </div>
+            <!-- end container -->
+        </div>
+        <!-- end auth page content -->
+
+        <!-- footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="text-center">
+                            <p class="mb-0 text-muted">&copy; 2026 MOVEX SPORTS</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- end Footer -->
+    </div>
+    <!-- end auth-page-wrapper -->
+
+    <!-- JAVASCRIPT -->
+    <script src="assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/libs/simplebar/simplebar.min.js"></script>
+    <script src="assets/libs/node-waves/waves.min.js"></script>
+    <script src="assets/libs/feather-icons/feather.min.js"></script>
+    <script src="assets/js/pages/plugins/lord-icon-2.1.0.js"></script>
+    <script src="assets/js/plugins.js"></script>
+
+    <!-- particles js -->
+    <script src="assets/libs/particles.js/particles.js"></script>
+    <script src="assets/js/pages/movex-signin.js"></script>
+</body>
+
+</html>
+
+
+
