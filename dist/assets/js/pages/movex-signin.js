@@ -71,7 +71,7 @@ initializePasswordToggle();
         const loginForm = document.getElementById("login-form");
         const loginAlert = document.getElementById("login-alert");
         const loginSubmit = document.getElementById("login-submit");
-        const apiBaseUrl = "https://uwbv2-1.onrender.com";
+        const apiBaseUrl = "https://cartracker-api.onrender.com";
 
         function setLoginAlert(message) {
             loginAlert.textContent = message;
@@ -115,11 +115,13 @@ initializePasswordToggle();
 
             sessionStorage.setItem("movex_access_token", data.access_token);
             sessionStorage.setItem("movex_token_type", data.token_type || "bearer");
+            sessionStorage.setItem("movex_token_expires_at", String(Date.now() + (Number(data.expires_in) || 0) * 1000));
             sessionStorage.setItem("movex_user", JSON.stringify(authenticatedUser));
             sessionStorage.setItem("access_token", data.access_token);
 
             localStorage.removeItem("movex_access_token");
             localStorage.removeItem("movex_token_type");
+            localStorage.removeItem("movex_token_expires_at");
             localStorage.removeItem("movex_user");
             localStorage.removeItem("access_token");
         }
@@ -144,7 +146,7 @@ initializePasswordToggle();
 
                 const data = await response.json().catch(() => ({}));
 
-                if (!response.ok || !data.ok || !data.access_token) {
+                if (!response.ok || !data.access_token) {
                     throw new Error(getApiErrorMessage(data, "Usuario ou senha invalidos."));
                 }
 
