@@ -122,23 +122,9 @@ const signupForm = document.getElementById("signup-form");
         const signupSubmit = document.getElementById("signup-submit");
         const signupPassword = document.getElementById("password-input");
         const signupConfirmPassword = document.getElementById("confirm-password-input");
-const signupInviteToken = document.getElementById("invite-token");
-const apiBaseUrl = "https://uwbv2-1.onrender.com";
+const signupEndpoint = "https://cartracker-api.onrender.com/users";
 
 initializePasswordChecklist(signupPassword);
-
-        function getSignupInviteToken() {
-            const params = new URLSearchParams(window.location.search);
-            const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-
-            return (
-                params.get("invite") ||
-                params.get("token") ||
-                hashParams.get("invite") ||
-                hashParams.get("token") ||
-                ""
-            ).trim();
-        }
 
         function validateSignupPasswordMatch() {
             if (!signupPassword || !signupConfirmPassword) {
@@ -151,8 +137,6 @@ initializePasswordChecklist(signupPassword);
 
         signupPassword.addEventListener("input", validateSignupPasswordMatch);
         signupConfirmPassword.addEventListener("input", validateSignupPasswordMatch);
-        signupInviteToken.value = getSignupInviteToken();
-
         function setSignupAlert(message, type) {
             signupAlert.textContent = message;
             signupAlert.classList.toggle("auth-alert-success", type === "success");
@@ -193,28 +177,27 @@ initializePasswordChecklist(signupPassword);
                 return;
             }
 
-            const token = signupInviteToken.value;
-
-            if (!token) {
-                setSignupAlert("Link de convite invalido ou sem token.", "error");
-                return;
-            }
-
             const payload = {
-                invite: token,
-                username: document.getElementById("username").value.trim(),
-                senha: signupPassword.value,
                 nome: document.getElementById("first-name").value.trim(),
                 sobrenome: document.getElementById("last-name").value.trim(),
+                cpf: document.getElementById("cpf-input").value.trim(),
                 email: document.getElementById("useremail").value.trim(),
-                contato: document.getElementById("contact-input").value.trim(),
+                rua: document.getElementById("street-input").value.trim(),
+                numero: document.getElementById("number-input").value.trim(),
+                cep: document.getElementById("cep-input").value.trim(),
+                bairro: document.getElementById("neighborhood-input").value.trim(),
+                cidade: document.getElementById("city-input").value.trim(),
+                estado: document.getElementById("state-input").value.trim().toUpperCase(),
+                contato: document.getElementById("contact-input").value.replace(/\D/g, ""),
+                username: document.getElementById("username").value.trim(),
+                senha: signupPassword.value,
             };
 
             signupSubmit.disabled = true;
             signupSubmit.textContent = "Criando conta...";
 
             try {
-                const response = await fetch(`${apiBaseUrl}/user-filling/`, {
+                const response = await fetch(signupEndpoint, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
