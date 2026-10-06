@@ -42,8 +42,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     statsPanel.innerHTML = `
                         <div class="student-category-heading align-items-center d-flex">
                             <div class="flex-grow-1">
-                                <h4 class="card-title mb-1">Veículos por combustível</h4>
-                                <p class="text-muted mb-0">Distribuição da frota por tipo de combustível.</p>
+                                <h4 class="card-title mb-1">Veículos por marca</h4>
+                                <p class="text-muted mb-0">Distribuição da frota por marca de veículo.</p>
                             </div>
                             <span class="badge bg-primary-subtle text-primary student-category-total" id="student-category-total">0 veículos</span>
                         </div>
@@ -77,6 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const apiBaseUrl = "https://cartracker-api.onrender.com";
                 const studentsEndpoint = `${apiBaseUrl}/veiculos`;
                 const createVehicleEndpoint = `${apiBaseUrl}/veiculos`;
+                const brandsEndpoint = `${apiBaseUrl}/catalogo/marcas`;
                 const updateStudentEndpoint = `${apiBaseUrl}/user-filling/aluno`;
                 const removeBackgroundEndpoint = `${apiBaseUrl}/fotos-tratamento/remove-background`;
                 const confirmPlayerPhotoEndpoint = `${apiBaseUrl}/fotos-tratamento/confirmar-jogador-upload`;
@@ -118,6 +119,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const vehicleTankInput = document.getElementById("vehicle-tank-input");
                 const vehicleConsumptionInput = document.getElementById("vehicle-consumption-input");
                 const vehicleMaxSpeedInput = document.getElementById("vehicle-max-speed-input");
+                let brandsLoaded = false;
                 const categorySummary = document.getElementById("student-category-summary");
                 const categoryTotal = document.getElementById("student-category-total");
                 const editStudentButton = document.getElementById("edit-student-btn");
@@ -184,6 +186,102 @@ document.addEventListener("DOMContentLoaded", function () {
                         || "";
                 }
 
+                function redirectToSignin() {
+                    ["movex_access_token", "access_token", "movex_token_type", "movex_token_expires_at", "movex_user"].forEach(function (key) {
+                        sessionStorage.removeItem(key);
+                        localStorage.removeItem(key);
+                    });
+                    window.location.replace("signin.html");
+                }
+
+                async function fetchWithAuthentication(url, options) {
+                    const token = getAccessToken();
+                    if (!token) {
+                        redirectToSignin();
+                        throw new Error("Sessão não encontrada.");
+                    }
+
+                    const requestOptions = options || {};
+                    requestOptions.headers = Object.assign({}, requestOptions.headers, {
+                        "Accept": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    });
+                    const response = await fetch(url, requestOptions);
+                    if (response.status === 401) {
+                        redirectToSignin();
+                        throw new Error("Sessão expirada.");
+                    }
+                    return response;
+                }
+
+                function resetModelSelect(message) {
+                    vehicleModelInput.innerHTML = "";
+                    vehicleModelInput.append(new Option(message || "Selecione uma marca primeiro", ""));
+                    vehicleModelInput.disabled = true;
+                }
+
+                function populateYears() {
+                    const maximumYear = new Date().getFullYear() + 1;
+                    vehicleYearInput.innerHTML = "";
+                    vehicleYearInput.append(new Option("Selecione o ano", ""));
+                    for (let year = maximumYear; year >= 2005; year -= 1) {
+                        vehicleYearInput.append(new Option(String(year), String(year)));
+                    }
+                }
+
+                async function loadBrands() {
+                    if (brandsLoaded) return;
+                    vehicleBrandInput.disabled = true;
+                    vehicleBrandInput.innerHTML = "";
+                    vehicleBrandInput.append(new Option("Carregando marcas...", ""));
+                    resetModelSelect();
+
+                    try {
+                        const response = await fetchWithAuthentication(brandsEndpoint, { method: "GET" });
+                        const brands = await response.json().catch(function () { return []; });
+                        if (!response.ok) throw new Error(getApiErrorMessage(response, brands));
+
+                        vehicleBrandInput.innerHTML = "";
+                        vehicleBrandInput.append(new Option("Selecione a marca", ""));
+                        brands.forEach(function (brand) {
+                            vehicleBrandInput.append(new Option(brand.nome, String(brand.marca_id)));
+                        });
+                        vehicleBrandInput.disabled = false;
+                        brandsLoaded = true;
+                    } catch (error) {
+                        vehicleBrandInput.innerHTML = "";
+                        vehicleBrandInput.append(new Option("Não foi possível carregar as marcas", ""));
+                        vehicleBrandInput.disabled = false;
+                    }
+                }
+
+                async function loadModels(brandId) {
+                    resetModelSelect(brandId ? "Carregando modelos..." : "Selecione uma marca primeiro");
+                    if (!brandId) return;
+
+                    try {
+                        const endpoint = `${brandsEndpoint}/${encodeURIComponent(brandId)}/modelos`;
+                        const response = await fetchWithAuthentication(endpoint, { method: "GET" });
+                        const models = await response.json().catch(function () { return []; });
+                        if (!response.ok) throw new Error(getApiErrorMessage(response, models));
+
+                        vehicleModelInput.innerHTML = "";
+                        vehicleModelInput.append(new Option("Selecione o modelo", ""));
+                        models.forEach(function (model) {
+                            vehicleModelInput.append(new Option(model.nome, String(model.modelo_id)));
+                        });
+                        vehicleModelInput.disabled = false;
+                    } catch (error) {
+                        vehicleModelInput.innerHTML = "";
+                        vehicleModelInput.append(new Option("Não foi possível carregar os modelos", ""));
+                        vehicleModelInput.disabled = false;
+                    }
+                }
+
+                function getSelectedText(select) {
+                    return select.selectedIndex > 0 ? select.options[select.selectedIndex].text.trim() : "";
+                }
+
                 function escapeHtml(value) {
                     return String(value ?? "").replace(/[&<>"']/g, function (character) {
                         return {
@@ -243,7 +341,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 function renderCategorySummary(vehicles) {
                     if (!categorySummary || !categoryTotal) return;
 
-                    const normalizedVehicles = vehicles.map(normalizeVehicle);
+                    const normalizedVehicles = vehicles.map(function (vehicle, index) {
+                        return Object.prototype.hasOwnProperty.call(vehicle, "brand")
+                            ? vehicle
+                            : normalizeVehicle(vehicle, index);
+                    });
                     const total = normalizedVehicles.length;
                     const counts = new Map();
                     const colors = [
@@ -252,8 +354,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     ];
 
                     normalizedVehicles.forEach(function (vehicle) {
-                        const fuel = formatFuel(vehicle.fuel);
-                        counts.set(fuel, (counts.get(fuel) || 0) + 1);
+                        const brand = String(vehicle.brand || "Sem marca").trim();
+                        counts.set(brand, (counts.get(brand) || 0) + 1);
                     });
 
                     categoryTotal.textContent = `${total} ${total === 1 ? "veículo" : "veículos"}`;
@@ -802,13 +904,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     renderTableMessage("Carregando veículos...", "empty");
 
                     try {
-                        const response = await fetch(studentsEndpoint, {
-                            method: "GET",
-                            headers: {
-                                "Accept": "application/json",
-                                "Authorization": `Bearer ${token}`
-                            }
-                        });
+                        const response = await fetchWithAuthentication(studentsEndpoint, { method: "GET" });
                         const payload = await response.json().catch(function () {
                             return {};
                         });
@@ -841,8 +937,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 function getVehiclePayload() {
                     return {
-                        marca: vehicleBrandInput.value.trim(),
-                        modelo: vehicleModelInput.value.trim(),
+                        marca: getSelectedText(vehicleBrandInput),
+                        modelo: getSelectedText(vehicleModelInput),
                         ano: Number(vehicleYearInput.value),
                         cor: vehicleColorInput.value.trim(),
                         placa: vehiclePlateInput.value.trim().toUpperCase(),
@@ -867,6 +963,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 function resetWizard() {
                     studentForm.reset();
+                    resetModelSelect();
                     studentForm.classList.remove("was-validated");
                     reviewTab.disabled = true;
                     successTab.disabled = true;
@@ -893,6 +990,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     showWizardStep(dataTab, 1);
                 });
 
+                vehicleBrandInput.addEventListener("change", function () {
+                    loadModels(vehicleBrandInput.value);
+                });
+
                 studentForm.addEventListener("submit", async function (event) {
                     event.preventDefault();
 
@@ -908,12 +1009,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     submitError.classList.add("d-none");
 
                     try {
-                        const response = await fetch(createVehicleEndpoint, {
+                        const response = await fetchWithAuthentication(createVehicleEndpoint, {
                             method: "POST",
                             headers: {
-                                "Accept": "application/json",
-                                "Content-Type": "application/json",
-                                "Authorization": `Bearer ${token}`
+                                "Content-Type": "application/json"
                             },
                             body: JSON.stringify(getVehiclePayload())
                         });
@@ -1012,6 +1111,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 studentPhotoPlayerLayer?.addEventListener("pointercancel", endPlayerPointerAction);
                 studentPhotoModalElement?.addEventListener("hidden.bs.modal", resetPhotoModal);
                 studentModalElement.addEventListener("hidden.bs.modal", resetWizard);
+                studentModalElement.addEventListener("show.bs.modal", loadBrands);
+                populateYears();
                 renderCategorySummary([]);
                 Promise.resolve(window.movexSessionReady).then(function (sessionIsReady) {
                     if (sessionIsReady !== false) loadStudents();
