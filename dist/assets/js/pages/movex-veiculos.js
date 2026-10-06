@@ -42,8 +42,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     statsPanel.innerHTML = `
                         <div class="student-category-heading align-items-center d-flex">
                             <div class="flex-grow-1">
-                                <h4 class="card-title mb-1">Veículos por categoria</h4>
-                                <p class="text-muted mb-0">Proporção sobre o total de veículos cadastrados.</p>
+                                <h4 class="card-title mb-1">Veículos por combustível</h4>
+                                <p class="text-muted mb-0">Distribuição da frota por tipo de combustível.</p>
                             </div>
                             <span class="badge bg-primary-subtle text-primary student-category-total" id="student-category-total">0 veículos</span>
                         </div>
@@ -59,11 +59,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 studentsTable.querySelector("thead").innerHTML = `
                     <tr>
-                        <th scope="col" class="text-center" style="width: 52px;">Selecionar</th>
-                        <th scope="col">Identificação</th>
-                        <th scope="col">Modelo</th>
+                        <th scope="col">Veículo</th>
                         <th scope="col">Placa</th>
-                        <th scope="col">Categoria</th>
+                        <th scope="col">Ano</th>
+                        <th scope="col">Combustível</th>
+                        <th scope="col">Tanque</th>
+                        <th scope="col">Consumo</th>
+                        <th scope="col">Vel. máxima</th>
+                        <th scope="col">Odômetro</th>
                     </tr>
                 `;
 
@@ -142,11 +145,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 studentsTable.querySelector("thead").innerHTML = `
                     <tr>
-                        <th scope="col" class="text-center" style="width: 52px;">Selecionar</th>
-                        <th scope="col">Identificação</th>
-                        <th scope="col">Modelo</th>
+                        <th scope="col">Veículo</th>
                         <th scope="col">Placa</th>
-                        <th scope="col">Categoria</th>
+                        <th scope="col">Ano</th>
+                        <th scope="col">Combustível</th>
+                        <th scope="col">Tanque</th>
+                        <th scope="col">Consumo</th>
+                        <th scope="col">Vel. máxima</th>
+                        <th scope="col">Odômetro</th>
                     </tr>
                 `;
 
@@ -190,82 +196,81 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                 }
 
-                function normalizeStudents(payload) {
+                function normalizeVehicles(payload) {
                     const source = Array.isArray(payload)
                         ? payload
-                        : payload?.alunos
-                            || payload?.jogadores
-                            || payload?.students
-                            || payload?.players
+                        : payload?.veiculos
+                            || payload?.vehicles
                             || payload?.data
                             || payload?.results
                             || payload?.items
                             || payload?.records
                             || [];
 
-                    return Array.isArray(source)
-                        ? source.map(function (item) {
-                            return item?.aluno || item?.jogador || item?.student || item?.player || item;
-                        }).filter(Boolean)
-                        : [];
+                    return Array.isArray(source) ? source.filter(Boolean) : [];
                 }
 
-                function normalizeStudent(student, index) {
-                    const userId = student?.aluno_user_id ?? student?.user_id ?? student?.id ?? student?.aluno_id ?? index + 1;
+                function normalizeVehicle(vehicle, index) {
                     return {
-                        id: student?.aluno_id ?? student?.id ?? student?.user_id ?? index + 1,
-                        userId,
-                        name: student?.aluno_nome ?? student?.nome ?? student?.name ?? "",
-                        lastname: student?.aluno_sobrenome ?? student?.sobrenome ?? student?.lastname ?? "",
-                        position: student?.posicao
-                            ?? student?.["posição"]
-                            ?? student?.["posi\u00c3\u00a7\u00c3\u00a3o"]
-                            ?? student?.position
-                            ?? "",
-                        category: student?.categoria ?? student?.category ?? ""
+                        id: vehicle?.veiculo_id ?? vehicle?.id ?? index + 1,
+                        brand: vehicle?.marca ?? "",
+                        model: vehicle?.modelo ?? "",
+                        year: vehicle?.ano ?? "",
+                        color: vehicle?.cor ?? "",
+                        plate: vehicle?.placa ?? "",
+                        fuel: vehicle?.combustivel_tipo ?? "",
+                        tank: vehicle?.capacidade_tanque_l ?? "",
+                        consumption: vehicle?.consumo_km_l ?? "",
+                        maxSpeed: vehicle?.velocidade_maxima_kmh ?? "",
+                        odometer: vehicle?.odometro_km ?? 0
                     };
                 }
 
-                function getCategoryNumber(category) {
-                    const match = String(category || "").match(/\d+/);
-                    const number = match ? Number(match[0]) : 0;
-                    return number >= 6 && number <= 19 ? number : 0;
+                function formatFuel(value) {
+                    const labels = {
+                        gasolina: "Gasolina", etanol: "Etanol", flex: "Flex",
+                        diesel: "Diesel", eletrico: "Elétrico", hibrido: "Híbrido", gnv: "GNV"
+                    };
+                    return labels[String(value || "").toLowerCase()] || String(value || "—");
                 }
 
-                function renderCategorySummary(students) {
+                function formatNumber(value, decimals) {
+                    const number = Number(value);
+                    if (!Number.isFinite(number)) return "—";
+                    return number.toLocaleString("pt-BR", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+                }
+
+                function renderCategorySummary(vehicles) {
                     if (!categorySummary || !categoryTotal) return;
 
-                    const normalizedStudents = students.map(normalizeStudent);
-                    const total = normalizedStudents.length;
+                    const normalizedVehicles = vehicles.map(normalizeVehicle);
+                    const total = normalizedVehicles.length;
                     const counts = new Map();
                     const colors = [
                         "#0ab39c", "#299cdb", "#405189", "#f7b84b",
                         "#f06548", "#3577f1", "#6f42c1"
                     ];
 
-                    normalizedStudents.forEach(function (student) {
-                        const categoryNumber = getCategoryNumber(student.category);
-                        if (!categoryNumber) return;
-                        counts.set(categoryNumber, (counts.get(categoryNumber) || 0) + 1);
+                    normalizedVehicles.forEach(function (vehicle) {
+                        const fuel = formatFuel(vehicle.fuel);
+                        counts.set(fuel, (counts.get(fuel) || 0) + 1);
                     });
 
                     categoryTotal.textContent = `${total} ${total === 1 ? "veículo" : "veículos"}`;
-                    const activeCategories = Array.from(counts.entries()).sort(function (first, second) {
-                        return first[0] - second[0];
-                    });
+                    const activeCategories = Array.from(counts.entries()).sort(function (first, second) { return second[1] - first[1]; });
 
                     if (!activeCategories.length) {
                         categorySummary.innerHTML = `
                             <div class="text-center text-muted py-4 grid-column-full">
                                 <i class="ri-pie-chart-line fs-2 d-block mb-2"></i>
-                                Nenhuma categoria possui atletas cadastrados.
+                                Nenhum veículo cadastrado.
                             </div>
                         `;
                         return;
                     }
 
                     categorySummary.innerHTML = activeCategories.map(function (categoryEntry, index) {
-                        const categoryNumber = categoryEntry[0];
+                        const categoryName = categoryEntry[0];
                         const count = categoryEntry[1];
                         const percentage = total ? count / total * 100 : 0;
                         const formattedPercentage = Number.isInteger(percentage)
@@ -282,7 +287,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                     <div class="card-body position-relative" style="z-index:1">
                                         <div class="d-flex align-items-center">
                                             <div class="flex-grow-1 overflow-hidden">
-                                                <p class="text-uppercase fw-medium text-muted text-truncate mb-3">Sub-${categoryNumber}</p>
+                                                <p class="text-uppercase fw-medium text-muted text-truncate mb-3">${escapeHtml(categoryName)}</p>
                                                 <h4 class="fs-22 fw-semibold ff-secondary mb-0">
                                                     ${count} <span class="fs-13 fw-normal text-muted">${count === 1 ? "veículo" : "veículos"}</span>
                                                 </h4>
@@ -302,15 +307,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     const colorClass = type === "error" ? "text-danger" : "text-muted";
                     studentsTableBody.innerHTML = `
                         <tr>
-                            <td colspan="5" class="text-center py-5 ${colorClass}">
+                            <td colspan="8" class="text-center py-5 ${colorClass}">
                                 ${escapeHtml(message)}
                             </td>
                         </tr>
                     `;
                 }
 
-                function renderStudents(students) {
-                    currentStudents = students.map(normalizeStudent);
+                function renderStudents(vehicles) {
+                    currentStudents = vehicles.map(normalizeVehicle);
                     selectedStudentIndex = null;
                     if (editStudentButton) editStudentButton.disabled = true;
                     renderCategorySummary(currentStudents);
@@ -320,24 +325,22 @@ document.addEventListener("DOMContentLoaded", function () {
                         return;
                     }
 
-                    studentsTableBody.innerHTML = currentStudents.map(function (student, index) {
+                    studentsTableBody.innerHTML = currentStudents.map(function (vehicle) {
                         return `
                             <tr>
-                                <td class="text-center">
-                                    <input class="form-check-input student-selector" type="radio" name="selected-student" value="${index}" aria-label="Selecionar ${escapeHtml(student.name || "veículo")}">
-                                </td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <img src="assets/images/users/user-dummy-img.jpg" alt="" class="avatar-xs rounded-circle me-2">
-                                        <span>${escapeHtml(student.name || "—")}</span>
-                                        <button type="button" class="btn btn-sm btn-soft-primary student-photo-trigger ms-auto" data-student-index="${index}">
-                                            <i class="ri-image-add-line me-1"></i>Anexar foto
-                                        </button>
+                                        <span class="avatar-xs rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center"><i class="ri-car-line"></i></span>
+                                        <div><strong class="d-block">${escapeHtml(vehicle.brand || "—")} ${escapeHtml(vehicle.model || "")}</strong><small class="text-muted">${escapeHtml(vehicle.color || "—")}</small></div>
                                     </div>
                                 </td>
-                                <td>${escapeHtml(student.lastname || "—")}</td>
-                                <td>${escapeHtml(student.position || "—")}</td>
-                                <td><span class="badge bg-success-subtle text-success">${escapeHtml(student.category || "—")}</span></td>
+                                <td><span class="fw-semibold">${escapeHtml(vehicle.plate || "—")}</span></td>
+                                <td>${escapeHtml(vehicle.year || "—")}</td>
+                                <td><span class="badge bg-info-subtle text-info">${escapeHtml(formatFuel(vehicle.fuel))}</span></td>
+                                <td>${formatNumber(vehicle.tank, 1)} L</td>
+                                <td>${formatNumber(vehicle.consumption, 1)} km/L</td>
+                                <td>${formatNumber(vehicle.maxSpeed, 0)} km/h</td>
+                                <td>${formatNumber(vehicle.odometer, 1)} km</td>
                             </tr>
                         `;
                     }).join("");
@@ -814,7 +817,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             throw new Error(getApiErrorMessage(response, payload));
                         }
 
-                        renderStudents(normalizeStudents(payload));
+                        renderStudents(normalizeVehicles(payload));
                     } catch (error) {
                         renderTableMessage(error.message || "Não foi possível carregar os veículos.", "error");
                     }
@@ -922,6 +925,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             throw new Error(getApiErrorMessage(response, payload));
                         }
 
+                        await loadStudents();
                         showWizardStep(successTab, 3);
                     } catch (error) {
                         submitError.textContent = error.message || "Não foi possível cadastrar o veículo.";
@@ -1009,6 +1013,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 studentPhotoModalElement?.addEventListener("hidden.bs.modal", resetPhotoModal);
                 studentModalElement.addEventListener("hidden.bs.modal", resetWizard);
                 renderCategorySummary([]);
-                loadStudents();
+                Promise.resolve(window.movexSessionReady).then(function (sessionIsReady) {
+                    if (sessionIsReady !== false) loadStudents();
+                });
             });
 
