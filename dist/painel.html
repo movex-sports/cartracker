@@ -1205,51 +1205,19 @@
                                     <aside class="movex-route-sidebar">
                                         <div class="movex-route-heading">
                                             <div>
-                                                <span class="movex-route-eyebrow">RASTREAMENTO</span>
-                                                <h2 id="movex-route-title">Mapa do percurso</h2>
+                                                <span class="movex-route-eyebrow">FROTA LOCADA</span>
+                                                <h2 id="movex-route-title">Ve&iacute;culos alugados</h2>
                                             </div>
-                                            <span class="movex-route-status"><i></i>Entrada manual</span>
+                                            <span class="movex-route-count" id="rented-vehicle-count">0</span>
                                         </div>
-
-                                        <div class="movex-route-summary">
-                                            <div class="movex-route-primary-stat">
-                                                <span>Dist&acirc;ncia estimada</span>
-                                                <strong id="movex-route-distance">&mdash;</strong>
-                                            </div>
-                                            <div>
-                                                <span>Pontos</span>
-                                                <strong id="movex-route-point-count">&mdash;</strong>
-                                            </div>
-                                        </div>
-
-                                        <div class="movex-route-ends">
-                                            <div class="movex-route-endpoint">
-                                                <i class="movex-route-pin is-start"></i>
-                                                <div><small>IN&Iacute;CIO</small><strong id="movex-route-start-label">&mdash;</strong><span id="movex-route-start-coords">&mdash;</span></div>
-                                            </div>
-                                            <div class="movex-route-connector"></div>
-                                            <div class="movex-route-endpoint">
-                                                <i class="movex-route-pin is-end"></i>
-                                                <div><small>FIM</small><strong id="movex-route-end-label">&mdash;</strong><span id="movex-route-end-coords">&mdash;</span></div>
-                                            </div>
-                                        </div>
-
-                                        <div class="movex-coordinate-input">
-                                            <label for="movex-route-coordinates">Coordenadas do percurso</label>
-                                            <textarea id="movex-route-coordinates" rows="6" spellcheck="false" placeholder="23&deg;31'16.6&quot;S 46&deg;51'14.5&quot;W&#10;23&deg;31'16.0&quot;S 46&deg;51'16.4&quot;W"></textarea>
-                                            <button id="movex-route-plot" type="button"><i class="ri-map-pin-line"></i> Plotar percurso</button>
-                                            <p id="movex-route-feedback" aria-live="polite">Insira ao menos duas coordenadas em DMS ou graus decimais.</p>
+                                        <div class="movex-rented-list" id="rented-vehicle-list" aria-live="polite">
+                                            <div class="movex-rented-empty"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Carregando veículos...</div>
                                         </div>
                                     </aside>
 
                                     <div class="movex-map-panel">
-                                        <div id="movex-route-map" role="application" aria-label="Mapa interativo do percurso"></div>
-                                        <div class="movex-map-label"><span>VE&Iacute;CULO 01</span><strong>Percurso manual</strong></div>
-                                        <div class="movex-map-legend" aria-label="Legenda do mapa">
-                                            <span><i class="is-start"></i>In&iacute;cio</span>
-                                            <span><i class="is-route"></i>Percurso</span>
-                                            <span><i class="is-end"></i>Fim</span>
-                                        </div>
+                                        <div id="movex-route-map" role="application" aria-label="Mapa da frota"></div>
+                                        <div class="movex-map-label"><span id="map-vehicle-label">FROTA LOCADA</span><strong id="map-vehicle-status">Aguardando coordenadas reais</strong></div>
                                         <div id="movex-route-map-error" class="movex-map-error" hidden>N&atilde;o foi poss&iacute;vel carregar o mapa.</div>
                                     </div>
                                 </section>

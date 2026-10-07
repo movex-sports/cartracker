@@ -1,6 +1,6 @@
 .movex-route-card {
     display: grid;
-    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+    grid-template-columns: minmax(320px, 390px) minmax(0, 1fr);
     min-height: 610px;
     margin-bottom: 1.5rem;
     overflow: hidden;
@@ -13,6 +13,7 @@
 .movex-route-sidebar {
     padding: 1.5rem;
     border-right: 1px solid var(--vz-border-color);
+    min-width: 0;
 }
 
 .movex-route-heading {
@@ -50,6 +51,70 @@
     background: #f7b84b;
     box-shadow: 0 0 0 4px rgba(247, 184, 75, .14);
 }
+
+.movex-route-count {
+    display: inline-grid;
+    min-width: 2rem;
+    height: 2rem;
+    padding: 0 .55rem;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--vz-primary);
+    color: #fff;
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+.movex-rented-list {
+    display: grid;
+    gap: .85rem;
+    max-height: 525px;
+    margin-top: 1.25rem;
+    padding-right: .35rem;
+    overflow-y: auto;
+}
+
+.movex-rented-card {
+    position: relative;
+    padding: 1rem 1rem .9rem 1.15rem;
+    overflow: hidden;
+    border: 1px solid var(--vz-border-color);
+    border-radius: .75rem;
+    background: var(--vz-card-bg);
+    box-shadow: 0 3px 10px rgba(30, 41, 59, .06);
+    cursor: pointer;
+    transition: border-color .18s, transform .18s, box-shadow .18s;
+}
+
+.movex-rented-card::before {
+    content: "";
+    position: absolute;
+    top: .65rem;
+    bottom: .65rem;
+    left: 0;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
+    background: #0ab39c;
+}
+
+.movex-rented-card:hover,
+.movex-rented-card.is-selected {
+    border-color: rgba(var(--vz-primary-rgb), .45);
+    box-shadow: 0 8px 20px rgba(30, 41, 59, .1);
+    transform: translateY(-1px);
+}
+
+.movex-rented-card-header { display: flex; align-items: flex-start; gap: .75rem; }
+.movex-rented-icon { display: grid; flex: 0 0 48px; height: 48px; place-items: center; border-radius: .65rem; background: var(--vz-primary-bg-subtle); color: var(--vz-primary); font-size: 1.45rem; }
+.movex-rented-title { min-width: 0; flex: 1; }
+.movex-rented-title strong { display: block; font-size: .9rem; }
+.movex-rented-title span { display: block; margin-top: .1rem; color: var(--vz-secondary-color); font-size: .73rem; }
+.movex-rented-details { display: grid; gap: .45rem; margin-top: .8rem; padding-top: .75rem; border-top: 1px solid var(--vz-border-color); }
+.movex-rented-details span { display: flex; align-items: center; gap: .45rem; min-width: 0; color: var(--vz-secondary-color); font-size: .74rem; }
+.movex-rented-details i { color: var(--vz-body-color); font-size: .95rem; }
+.movex-rented-details b { overflow: hidden; color: var(--vz-body-color); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.movex-rented-meta { display: flex; justify-content: space-between; gap: .75rem; margin-top: .7rem; color: var(--vz-secondary-color); font-size: .68rem; }
+.movex-rented-empty { padding: 2.5rem 1rem; border: 1px dashed var(--vz-border-color); border-radius: .75rem; color: var(--vz-secondary-color); text-align: center; }
 
 .movex-route-summary {
     display: grid;
