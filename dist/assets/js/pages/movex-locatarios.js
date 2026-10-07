@@ -118,10 +118,22 @@
                 <th scope="col" class="text-end">Ações</th>
             </tr>`;
 
-        var tableAlert = document.createElement("div");
-        tableAlert.className = "alert d-none mx-3 mt-3 mb-0";
-        tableAlert.setAttribute("role", "alert");
-        table.parentElement.parentElement.insertBefore(tableAlert, table.parentElement);
+        var noticeContainer = document.createElement("div");
+        noticeContainer.className = "toast-container position-fixed top-0 end-0 p-3";
+        noticeContainer.style.zIndex = "1090";
+        noticeContainer.style.marginTop = "72px";
+        noticeContainer.innerHTML = `
+            <div id="renter-action-toast" class="toast border-0 shadow-lg" role="status" aria-live="polite" aria-atomic="true">
+                <div class="toast-header border-0 pb-1">
+                    <span id="renter-toast-icon" class="avatar-xs rounded-circle d-inline-flex align-items-center justify-content-center me-2"></span>
+                    <strong id="renter-toast-title" class="me-auto"></strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Fechar"></button>
+                </div>
+                <div id="renter-toast-message" class="toast-body pt-1 text-muted"></div>
+            </div>`;
+        document.body.appendChild(noticeContainer);
+        var noticeElement = document.getElementById("renter-action-toast");
+        var noticeToast = bootstrap.Toast.getOrCreateInstance(noticeElement, { delay: 5000 });
 
         var confirmationElement = document.createElement("div");
         confirmationElement.className = "modal fade";
@@ -171,14 +183,79 @@
             });
         }
 
+        var activationElement = document.createElement("div");
+        activationElement.className = "modal fade";
+        activationElement.id = "activateRenterModal";
+        activationElement.tabIndex = -1;
+        activationElement.setAttribute("aria-hidden", "true");
+        activationElement.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header border-0 px-4 pt-4 pb-0">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="avatar-md rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center"><i class="ri-user-follow-line fs-4"></i></span>
+                            <div><h4 class="modal-title mb-1">Ativar locatário</h4><p class="text-muted mb-0">Selecione o veículo que ficará sob sua responsabilidade.</p></div>
+                        </div>
+                        <button type="button" class="btn-close align-self-start" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body px-4 py-4">
+                        <div class="p-3 rounded bg-light mb-3"><span class="text-muted fs-12 d-block mb-1">LOCATÁRIO</span><strong id="activate-renter-name"></strong></div>
+                        <label class="form-label" for="activate-renter-vehicle">Veículo disponível</label>
+                        <select class="form-select" id="activate-renter-vehicle"></select>
+                        <div id="activate-renter-empty" class="alert alert-warning mt-3 mb-0 d-none"><i class="ri-information-line me-1"></i>Não há veículos livres para atribuição.</div>
+                    </div>
+                    <div class="modal-footer border-0 px-4 pb-4 pt-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-success" id="confirm-activate-renter"><i class="ri-user-follow-line me-1"></i>Ativar e atribuir</button>
+                    </div>
+                </div>
+            </div>`;
+        document.body.appendChild(activationElement);
+        var activationModal = bootstrap.Modal.getOrCreateInstance(activationElement);
+
+        function selectVehicleForActivation(renterName) {
+            var select = document.getElementById("activate-renter-vehicle");
+            var emptyMessage = document.getElementById("activate-renter-empty");
+            var confirmButton = document.getElementById("confirm-activate-renter");
+            var availableVehicles = vehicles.filter(function (vehicle) { return vehicle.locatario_id == null; });
+            document.getElementById("activate-renter-name").textContent = renterName;
+            select.innerHTML = '<option value="">Selecione um veículo</option>';
+            availableVehicles.forEach(function (vehicle) {
+                select.append(new Option(vehicleLabel(vehicle), String(vehicle.veiculo_id)));
+            });
+            select.disabled = !availableVehicles.length;
+            confirmButton.disabled = true;
+            emptyMessage.classList.toggle("d-none", Boolean(availableVehicles.length));
+
+            return new Promise(function (resolve) {
+                var selectedVehicleId = null;
+                function updateButton() { confirmButton.disabled = !select.value; }
+                function accept() { selectedVehicleId = select.value; activationModal.hide(); }
+                function finish() {
+                    select.removeEventListener("change", updateButton);
+                    confirmButton.removeEventListener("click", accept);
+                    resolve(selectedVehicleId);
+                }
+                select.addEventListener("change", updateButton);
+                confirmButton.addEventListener("click", accept);
+                activationElement.addEventListener("hidden.bs.modal", finish, { once: true });
+                activationModal.show();
+            });
+        }
+
         function renderMessage(message, error) {
             tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-5 ${error ? "text-danger" : "text-muted"}">${escapeHtml(message)}</td></tr>`;
         }
 
         function showTableAlert(message, error) {
-            tableAlert.textContent = message;
-            tableAlert.className = "alert mx-3 mt-3 mb-0 " + (error ? "alert-danger" : "alert-success");
-            window.setTimeout(function () { tableAlert.classList.add("d-none"); }, 6000);
+            var icon = document.getElementById("renter-toast-icon");
+            icon.className = "avatar-xs rounded-circle d-inline-flex align-items-center justify-content-center me-2 " + (error ? "bg-danger-subtle text-danger" : "bg-success-subtle text-success");
+            icon.innerHTML = error ? '<i class="ri-error-warning-line"></i>' : '<i class="ri-check-line"></i>';
+            document.getElementById("renter-toast-title").textContent = error ? "Não foi possível concluir" : "Alteração concluída";
+            document.getElementById("renter-toast-message").textContent = message;
+            noticeElement.classList.toggle("border-danger", error);
+            noticeElement.classList.toggle("border-success", !error);
+            noticeToast.show();
         }
 
         function populateVehicleSelect() {
@@ -214,7 +291,7 @@
                     <td>${escapeHtml(city || "—")}</td>
                     <td>${escapeHtml(formatZip(renter.locatario_cep))}</td>
                     <td><span class="badge ${isActive ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary"}">${isActive ? "Ativo" : "Inativo"}</span></td>
-                    <td class="text-end">${isActive ? `<button type="button" class="btn btn-sm btn-soft-danger renter-deactivate-btn" data-renter-id="${escapeHtml(renter.locatario_id)}" data-renter-name="${escapeHtml(fullName)}" data-vehicle-name="${escapeHtml(vehicle ? vehicleLabel(vehicle) : "O veículo vinculado")}" title="Desativar locatário" aria-label="Desativar ${escapeHtml(fullName)}"><i class="ri-user-unfollow-line me-1"></i>Desativar</button>` : '<span class="text-muted fs-12">Desativado</span>'}</td>
+                    <td class="text-end">${isActive ? `<button type="button" class="btn btn-sm btn-soft-danger renter-deactivate-btn" data-renter-id="${escapeHtml(renter.locatario_id)}" data-renter-name="${escapeHtml(fullName)}" data-vehicle-name="${escapeHtml(vehicle ? vehicleLabel(vehicle) : "O veículo vinculado")}" title="Desativar locatário" aria-label="Desativar ${escapeHtml(fullName)}"><i class="ri-user-unfollow-line me-1"></i>Desativar</button>` : `<button type="button" class="btn btn-sm btn-soft-success renter-activate-btn" data-renter-id="${escapeHtml(renter.locatario_id)}" data-renter-name="${escapeHtml(fullName)}" title="Ativar locatário" aria-label="Ativar ${escapeHtml(fullName)}"><i class="ri-user-follow-line me-1"></i>Ativar</button>`}</td>
                 </tr>`;
             }).join("");
         }
@@ -229,6 +306,41 @@
         inactiveToggle.addEventListener("change", applyStatusFilter);
 
         tableBody.addEventListener("click", async function (event) {
+            var activateButton = event.target.closest(".renter-activate-btn");
+            if (activateButton) {
+                var selectedVehicleId = await selectVehicleForActivation(activateButton.dataset.renterName || "este locatário");
+                if (!selectedVehicleId) return;
+
+                activateButton.disabled = true;
+                activateButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>Ativando...';
+                try {
+                    var activateResponse = await fetchWithAuthentication(
+                        rentersEndpoint + "/" + encodeURIComponent(activateButton.dataset.renterId) + "/ativar",
+                        {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ veiculo_id: Number(selectedVehicleId) })
+                        }
+                    );
+                    var activateData = await activateResponse.json().catch(function () { return {}; });
+                    if (!activateResponse.ok) {
+                        var activateFallback = activateResponse.status === 404
+                            ? "Locatário ou veículo não encontrado na sua empresa."
+                            : activateResponse.status === 409
+                                ? "O veículo selecionado já está ocupado ou o locatário possui outro vínculo."
+                                : "Não foi possível ativar o locatário.";
+                        throw new Error(apiError(activateData, activateFallback));
+                    }
+                    await loadData();
+                    showTableAlert("Locatário ativado e veículo atribuído com sucesso.", false);
+                } catch (error) {
+                    showTableAlert(error.message || "Não foi possível ativar o locatário.", true);
+                    activateButton.disabled = false;
+                    activateButton.innerHTML = '<i class="ri-user-follow-line me-1"></i>Ativar';
+                }
+                return;
+            }
+
             var button = event.target.closest(".renter-deactivate-btn");
             if (!button) return;
 
