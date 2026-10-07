@@ -4,7 +4,7 @@
     <head>
 
         <meta charset="utf-8" />
-        <title>Meus ve&iacute;culos | MOVEX-PERFORMANCE</title>
+        <title>Usuários | Car Tracker</title>
         <script>document.documentElement.classList.add("movex-session-pending");</script>
         <style>.movex-session-pending body { visibility: hidden; }</style>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1021,13 +1021,13 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link menu-link active" href="meus-veiculos.html">
+                            <a class="nav-link menu-link" href="meus-veiculos.html">
                                 <i class="ri-car-line"></i> <span>Meus ve&iacute;culos</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link menu-link" href="meus-locatarios.html">
-                                <i class="ri-user-location-line"></i> <span>Meus locat&aacute;rios</span>
+                            <a class="nav-link menu-link active" href="usuarios.html">
+                                <i class="ri-user-location-line"></i> <span>Usuários</span>
                             </a>
                         </li>
                     </ul>
@@ -1053,12 +1053,12 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="page-title-box d-sm-flex align-items-center justify-content-between bg-galaxy-transparent">
-                                    <h4 class="mb-sm-0">Veículos</h4>
+                                    <h4 class="mb-sm-0">Usuários</h4>
 
                                     <div class="page-title-right">
                                         <ol class="breadcrumb m-0">
                                             <li class="breadcrumb-item"><a href="javascript: void(0);">Dashboards</a></li>
-                                            <li class="breadcrumb-item active">Veículos</li>
+                                            <li class="breadcrumb-item active">Usuários</li>
                                         </ol>
                                     </div>
 
@@ -1452,10 +1452,10 @@
                             <div class="col-xxl-8" id="students-table-source">
                                 <div class="card" id="students-table-card">
                                     <div class="card-header align-items-center d-flex">
-                                        <h4 class="card-title mb-0 flex-grow-1">Veículos</h4>
+                                        <h4 class="card-title mb-0 flex-grow-1">Usuários da empresa</h4>
                                         <div class="flex-shrink-0 d-flex gap-2">
                                             <button type="button" class="btn btn-success btn-sm material-shadow-none" id="open-student-wizard-btn" data-bs-toggle="modal" data-bs-target="#studentWizardModal">
-                                                <i class="ri-car-line align-bottom me-1"></i> Registrar novo veículo
+                                                <i class="ri-user-add-line align-bottom me-1"></i> Registrar novo locat&aacute;rio
                                             </button>
                                         </div>
                                     </div><!-- end card header -->
@@ -1749,8 +1749,8 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <div>
-                            <h5 class="modal-title" id="studentWizardModalLabel">Registrar novo veículo</h5>
-                            <p class="text-muted mb-0">Cadastre os dados do veículo.</p>
+                            <h5 class="modal-title" id="studentWizardModalLabel">Registrar novo locat&aacute;rio</h5>
+                            <p class="text-muted mb-0">Cadastre os dados do locat&aacute;rio e selecione o veículo relacionado.</p>
                         </div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                     </div>
@@ -1776,19 +1776,20 @@
                             <div class="tab-content">
                                 <div class="tab-pane fade show active" id="student-data-pane" role="tabpanel" aria-labelledby="student-data-tab">
                                     <div class="mb-4">
-                                        <h5 class="mb-1">Dados do veículo</h5>
+                                        <h5 class="mb-1">Dados do locat&aacute;rio</h5>
                                         <p class="text-muted mb-0">Preencha todos os campos para continuar.</p>
                                     </div>
                                     <div class="row">
-                                        <div class="col-md-6"><div class="mb-3"><label class="form-label" for="vehicle-brand-input">Marca</label><select class="form-select" id="vehicle-brand-input" required disabled><option value="">Carregando marcas...</option></select><div class="invalid-feedback">Selecione a marca.</div></div></div>
-                                        <div class="col-md-6"><div class="mb-3"><label class="form-label" for="vehicle-model-input">Modelo</label><select class="form-select" id="vehicle-model-input" required disabled><option value="">Selecione uma marca primeiro</option></select><div class="invalid-feedback">Selecione o modelo.</div></div></div>
-                                        <div class="col-md-4"><div class="mb-3"><label class="form-label" for="vehicle-year-input">Ano</label><select class="form-select" id="vehicle-year-input" required><option value="">Selecione o ano</option></select><div class="invalid-feedback">Selecione um ano válido.</div></div></div>
-                                        <div class="col-md-4"><div class="mb-3"><label class="form-label" for="vehicle-color-input">Cor</label><input type="text" class="form-control" id="vehicle-color-input" placeholder="Ex.: Prata" required maxlength="40"><div class="invalid-feedback">Informe a cor.</div></div></div>
-                                        <div class="col-md-4"><div class="mb-3"><label class="form-label" for="vehicle-plate-input">Placa</label><input type="text" class="form-control text-uppercase" id="vehicle-plate-input" placeholder="ABC1D23" minlength="7" maxlength="7" pattern="[A-Za-z]{3}[0-9][A-Za-z0-9][0-9]{2}" required><div class="invalid-feedback">Informe uma placa válida.</div></div></div>
-                                        <div class="col-md-6"><div class="mb-3"><label class="form-label" for="vehicle-fuel-input">Combustível</label><select class="form-select" id="vehicle-fuel-input" required><option value="">Selecione</option><option value="gasolina">Gasolina</option><option value="etanol">Etanol</option><option value="flex">Flex</option><option value="diesel">Diesel</option><option value="eletrico">Elétrico</option><option value="hibrido">Híbrido</option><option value="gnv">GNV</option></select><div class="invalid-feedback">Selecione o combustível.</div></div></div>
-                                        <div class="col-md-6"><div class="mb-3"><label class="form-label" for="vehicle-tank-input">Capacidade do tanque (L)</label><input type="number" class="form-control" id="vehicle-tank-input" placeholder="80" min="0" step="0.1" required><div class="invalid-feedback">Informe a capacidade do tanque.</div></div></div>
-                                        <div class="col-md-6"><div class="mb-3"><label class="form-label" for="vehicle-consumption-input">Consumo (km/L)</label><input type="number" class="form-control" id="vehicle-consumption-input" placeholder="10.5" min="0" step="0.1" required><div class="invalid-feedback">Informe o consumo.</div></div></div>
-                                        <div class="col-md-6"><div class="mb-3"><label class="form-label" for="vehicle-max-speed-input">Velocidade máxima (km/h)</label><input type="number" class="form-control" id="vehicle-max-speed-input" placeholder="180" min="0" step="1" required><div class="invalid-feedback">Informe a velocidade máxima.</div></div></div>
+                                        <div class="col-12"><div class="mb-3"><label class="form-label" for="tenant-vehicle-input">Ve&iacute;culo</label><select class="form-select" id="tenant-vehicle-input" required disabled><option value="">Carregando veículos...</option></select><div class="invalid-feedback">Selecione o veículo.</div></div></div>
+                                        <div class="col-md-6"><div class="mb-3"><label class="form-label" for="tenant-first-name-input">Nome</label><input type="text" class="form-control" id="tenant-first-name-input" placeholder="Ex.: Ana" required maxlength="100"><div class="invalid-feedback">Informe o nome.</div></div></div>
+                                        <div class="col-md-6"><div class="mb-3"><label class="form-label" for="tenant-last-name-input">Sobrenome</label><input type="text" class="form-control" id="tenant-last-name-input" placeholder="Ex.: Silva" required maxlength="100"><div class="invalid-feedback">Informe o sobrenome.</div></div></div>
+                                        <div class="col-md-6"><div class="mb-3"><label class="form-label" for="tenant-cpf-input">CPF</label><input type="text" class="form-control" id="tenant-cpf-input" placeholder="123.456.789-01" inputmode="numeric" maxlength="14" pattern="\d{3}\.\d{3}\.\d{3}-\d{2}" required><div class="invalid-feedback">Informe o CPF no formato 123.456.789-01.</div></div></div>
+                                        <div class="col-md-8"><div class="mb-3"><label class="form-label" for="tenant-street-input">Rua</label><input type="text" class="form-control" id="tenant-street-input" placeholder="Rua Exemplo" required maxlength="150"><div class="invalid-feedback">Informe a rua.</div></div></div>
+                                        <div class="col-md-4"><div class="mb-3"><label class="form-label" for="tenant-number-input">N&uacute;mero</label><input type="text" class="form-control" id="tenant-number-input" placeholder="100" required maxlength="20"><div class="invalid-feedback">Informe o número.</div></div></div>
+                                        <div class="col-md-4"><div class="mb-3"><label class="form-label" for="tenant-zip-input">CEP</label><input type="text" class="form-control" id="tenant-zip-input" placeholder="12345-678" inputmode="numeric" maxlength="9" pattern="\d{5}-\d{3}" required><div class="invalid-feedback">Informe o CEP no formato 12345-678.</div></div></div>
+                                        <div class="col-md-8"><div class="mb-3"><label class="form-label" for="tenant-neighborhood-input">Bairro</label><input type="text" class="form-control" id="tenant-neighborhood-input" placeholder="Centro" required maxlength="100"><div class="invalid-feedback">Informe o bairro.</div></div></div>
+                                        <div class="col-md-9"><div class="mb-3"><label class="form-label" for="tenant-city-input">Cidade</label><input type="text" class="form-control" id="tenant-city-input" placeholder="São Paulo" required maxlength="100"><div class="invalid-feedback">Informe a cidade.</div></div></div>
+                                        <div class="col-md-3"><div class="mb-3"><label class="form-label" for="tenant-state-input">UF</label><input type="text" class="form-control text-uppercase" id="tenant-state-input" placeholder="SP" minlength="2" maxlength="2" pattern="[A-Za-z]{2}" required><div class="invalid-feedback">Informe a UF.</div></div></div>
                                     </div>
                                     <div class="d-flex justify-content-end mt-3">
                                         <button type="button" class="btn btn-success btn-label right" id="student-review-btn">
@@ -1800,19 +1801,17 @@
                                 <div class="tab-pane fade" id="student-review-pane" role="tabpanel" aria-labelledby="student-review-tab">
                                     <div class="mb-4">
                                         <h5 class="mb-1">Revisão</h5>
-                                        <p class="text-muted mb-0">Confira os dados antes de criar o veículo.</p>
+                                        <p class="text-muted mb-0">Confira os dados antes de registrar o locat&aacute;rio.</p>
                                     </div>
                                     <div class="border rounded p-3 bg-light">
                                         <div class="row g-3">
-                                            <div class="col-sm-4"><span class="text-muted d-block">Marca</span><strong id="vehicle-review-brand">—</strong></div>
-                                            <div class="col-sm-4"><span class="text-muted d-block">Modelo</span><strong id="vehicle-review-model">—</strong></div>
-                                            <div class="col-sm-4"><span class="text-muted d-block">Ano</span><strong id="vehicle-review-year">—</strong></div>
-                                            <div class="col-sm-4"><span class="text-muted d-block">Cor</span><strong id="vehicle-review-color">—</strong></div>
-                                            <div class="col-sm-4"><span class="text-muted d-block">Placa</span><strong id="vehicle-review-plate">—</strong></div>
-                                            <div class="col-sm-4"><span class="text-muted d-block">Combustível</span><strong id="vehicle-review-fuel">—</strong></div>
-                                            <div class="col-sm-4"><span class="text-muted d-block">Tanque</span><strong id="vehicle-review-tank">—</strong></div>
-                                            <div class="col-sm-4"><span class="text-muted d-block">Consumo</span><strong id="vehicle-review-consumption">—</strong></div>
-                                            <div class="col-sm-4"><span class="text-muted d-block">Velocidade máxima</span><strong id="vehicle-review-max-speed">—</strong></div>
+                                            <div class="col-sm-6"><span class="text-muted d-block">Ve&iacute;culo</span><strong id="tenant-review-vehicle">—</strong></div>
+                                            <div class="col-sm-6"><span class="text-muted d-block">Nome completo</span><strong id="tenant-review-name">—</strong></div>
+                                            <div class="col-sm-6"><span class="text-muted d-block">CPF</span><strong id="tenant-review-cpf">—</strong></div>
+                                            <div class="col-sm-6"><span class="text-muted d-block">Endere&ccedil;o</span><strong id="tenant-review-address">—</strong></div>
+                                            <div class="col-sm-6"><span class="text-muted d-block">Bairro</span><strong id="tenant-review-neighborhood">—</strong></div>
+                                            <div class="col-sm-6"><span class="text-muted d-block">Cidade/UF</span><strong id="tenant-review-city">—</strong></div>
+                                            <div class="col-sm-6"><span class="text-muted d-block">CEP</span><strong id="tenant-review-zip">—</strong></div>
                                         </div>
                                     </div>
                                     <div class="alert alert-danger mt-3 d-none" id="student-submit-error" role="alert"></div>
@@ -1821,7 +1820,7 @@
                                             <i class="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>Voltar
                                         </button>
                                         <button type="submit" class="btn btn-success btn-label right ms-auto" id="student-submit-btn">
-                                            <i class="ri-car-line label-icon align-middle fs-16 ms-2"></i>Registrar veículo
+                                            <i class="ri-user-add-line label-icon align-middle fs-16 ms-2"></i>Registrar locat&aacute;rio
                                         </button>
                                     </div>
                                 </div>
@@ -1833,8 +1832,8 @@
                                                 <i class="ri-checkbox-circle-line"></i>
                                             </div>
                                         </div>
-                                        <h5>Veículo cadastrado!</h5>
-                                        <p class="text-muted">Os dados foram salvos e a lista de veículos foi atualizada.</p>
+                                        <h5>Locat&aacute;rio cadastrado!</h5>
+                                        <p class="text-muted">Os dados foram salvos e a lista de locatários foi atualizada.</p>
                                         <button type="button" class="btn btn-success" data-bs-dismiss="modal">Concluir</button>
                                     </div>
                                 </div>
@@ -2891,7 +2890,7 @@
 
         <!-- Dashboard init -->
 
-    <script src="assets/js/pages/movex-veiculos.js"></script>
+    <script src="assets/js/pages/movex-usuarios.js"></script>
 
     <!-- App js -->
         <script src="assets/js/app.js"></script>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 48" role="img" aria-labelledby="title">
+  <title id="title">Car Tracker</title>
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#18c6b1"/><stop offset="1" stop-color="#4a64a8"/></linearGradient></defs>
+  <path fill="url(#g)" d="M24 2C12.4 2 3 11.4 3 23c0 15.7 21 23 21 23s21-7.3 21-23C45 11.4 35.6 2 24 2Z"/>
+  <path fill="#fff" d="M13 20.5h2.1l2.3-5.3h13.2l2.3 5.3H35c1.1 0 2 .9 2 2v8h-3v3h-4v-3H18v3h-4v-3h-3v-8c0-1.1.9-2 2-2Zm6.6 0h8.8l-1.2-2.7h-6.4l-1.2 2.7Zm-.6 6.2a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4Zm10 0a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4Z"/>
+  <text x="56" y="23" fill="#f7fbff" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="1.2">CAR TRACKER</text>
+  <text x="57" y="37" fill="#72d8cc" font-family="Arial, sans-serif" font-size="8" letter-spacing="2">GESTÃO DE FROTA</text>
+</svg>
