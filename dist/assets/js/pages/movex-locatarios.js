@@ -5,6 +5,7 @@
     var rentersEndpoint = apiBaseUrl + "/locatarios";
     var vehiclesEndpoint = apiBaseUrl + "/veiculos";
     var vehicles = [];
+    var renters = [];
 
     function getAccessToken() {
         return sessionStorage.getItem("movex_access_token") || sessionStorage.getItem("access_token") || "";
@@ -93,6 +94,18 @@
             tableSource.classList.add("col-12");
         }
 
+        var headerActions = document.getElementById("open-student-wizard-btn")?.parentElement;
+        var inactiveFilter = document.createElement("div");
+        inactiveFilter.className = "form-check form-switch d-flex align-items-center gap-2 mb-0 me-2";
+        inactiveFilter.innerHTML = `
+            <input class="form-check-input mt-0" type="checkbox" role="switch" id="show-inactive-renters">
+            <label class="form-check-label text-nowrap mb-0" for="show-inactive-renters">Mostrar inativos</label>`;
+        if (headerActions) {
+            headerActions.classList.add("align-items-center", "flex-wrap", "justify-content-end");
+            headerActions.insertBefore(inactiveFilter, headerActions.firstChild);
+        }
+        var inactiveToggle = document.getElementById("show-inactive-renters");
+
         table.querySelector("thead").innerHTML = `
             <tr>
                 <th scope="col">Locatário</th>
@@ -101,10 +114,23 @@
                 <th scope="col">Endereço</th>
                 <th scope="col">Cidade/UF</th>
                 <th scope="col">CEP</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="text-end">Ações</th>
             </tr>`;
 
+        var tableAlert = document.createElement("div");
+        tableAlert.className = "alert d-none mx-3 mt-3 mb-0";
+        tableAlert.setAttribute("role", "alert");
+        table.parentElement.parentElement.insertBefore(tableAlert, table.parentElement);
+
         function renderMessage(message, error) {
-            tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-5 ${error ? "text-danger" : "text-muted"}">${escapeHtml(message)}</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-5 ${error ? "text-danger" : "text-muted"}">${escapeHtml(message)}</td></tr>`;
+        }
+
+        function showTableAlert(message, error) {
+            tableAlert.textContent = message;
+            tableAlert.className = "alert mx-3 mt-3 mb-0 " + (error ? "alert-danger" : "alert-success");
+            window.setTimeout(function () { tableAlert.classList.add("d-none"); }, 6000);
         }
 
         function populateVehicleSelect() {
@@ -122,7 +148,7 @@
 
         function renderRenters(renters) {
             if (!renters.length) {
-                renderMessage("Nenhum locatário cadastrado.", false);
+                renderMessage(inactiveToggle.checked ? "Nenhum locatário cadastrado." : "Nenhum locatário ativo.", false);
                 return;
             }
 
@@ -130,16 +156,63 @@
                 var vehicle = getVehicleById(renter.veiculo_id);
                 var address = [renter.locatario_rua, renter.locatario_numero, renter.locatario_bairro].filter(Boolean).join(", ");
                 var city = [renter.locatario_cidade, renter.locatario_estado].filter(Boolean).join("/");
+                var isActive = renter.status !== false;
+                var fullName = [renter.locatario_nome, renter.locatario_sobrenome].filter(Boolean).join(" ");
                 return `<tr>
-                    <td><div class="d-flex align-items-center gap-2"><span class="avatar-xs rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center"><i class="ri-user-line"></i></span><strong>${escapeHtml(renter.locatario_nome)} ${escapeHtml(renter.locatario_sobrenome)}</strong></div></td>
+                    <td><div class="d-flex align-items-center gap-2"><span class="avatar-xs rounded-circle ${isActive ? "bg-primary-subtle text-primary" : "bg-light text-muted"} d-inline-flex align-items-center justify-content-center"><i class="ri-user-line"></i></span><strong>${escapeHtml(fullName)}</strong></div></td>
                     <td>${escapeHtml(formatCpf(renter.locatario_cpf))}</td>
-                    <td>${escapeHtml(vehicle ? vehicleLabel(vehicle) : "Veículo #" + renter.veiculo_id)}</td>
+                    <td>${escapeHtml(isActive ? (vehicle ? vehicleLabel(vehicle) : (renter.veiculo_id ? "Veículo #" + renter.veiculo_id : "Sem veículo")) : "Veículo liberado")}</td>
                     <td class="text-wrap">${escapeHtml(address || "—")}</td>
                     <td>${escapeHtml(city || "—")}</td>
                     <td>${escapeHtml(formatZip(renter.locatario_cep))}</td>
+                    <td><span class="badge ${isActive ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary"}">${isActive ? "Ativo" : "Inativo"}</span></td>
+                    <td class="text-end">${isActive ? `<button type="button" class="btn btn-sm btn-soft-danger renter-deactivate-btn" data-renter-id="${escapeHtml(renter.locatario_id)}" data-renter-name="${escapeHtml(fullName)}" title="Desativar locatário" aria-label="Desativar ${escapeHtml(fullName)}"><i class="ri-user-unfollow-line me-1"></i>Desativar</button>` : '<span class="text-muted fs-12">Desativado</span>'}</td>
                 </tr>`;
             }).join("");
         }
+
+        function applyStatusFilter() {
+            var visibleRenters = inactiveToggle.checked
+                ? renters
+                : renters.filter(function (renter) { return renter.status !== false; });
+            renderRenters(visibleRenters);
+        }
+
+        inactiveToggle.addEventListener("change", applyStatusFilter);
+
+        tableBody.addEventListener("click", async function (event) {
+            var button = event.target.closest(".renter-deactivate-btn");
+            if (!button) return;
+
+            var renterName = button.dataset.renterName || "este locatário";
+            var confirmed = window.confirm(
+                "Desativar " + renterName + "?\n\nO veículo vinculado deixará de ser responsabilidade deste locatário e ficará livre para uma nova atribuição."
+            );
+            if (!confirmed) return;
+
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>Desativando...';
+
+            try {
+                var response = await fetchWithAuthentication(
+                    rentersEndpoint + "/" + encodeURIComponent(button.dataset.renterId) + "/desativar",
+                    { method: "PATCH" }
+                );
+                var data = await response.json().catch(function () { return {}; });
+                if (!response.ok) {
+                    var fallback = response.status === 404
+                        ? "Locatário não encontrado ou não pertence à sua empresa."
+                        : "Não foi possível desativar o locatário.";
+                    throw new Error(apiError(data, fallback));
+                }
+                await loadData();
+                showTableAlert("Locatário desativado e veículo liberado com sucesso.", false);
+            } catch (error) {
+                showTableAlert(error.message || "Não foi possível desativar o locatário.", true);
+                button.disabled = false;
+                button.innerHTML = '<i class="ri-user-unfollow-line me-1"></i>Desativar';
+            }
+        });
 
         async function loadData() {
             renderMessage("Carregando locatários...", false);
@@ -154,7 +227,8 @@
                 if (!responses[1].ok) throw new Error(apiError(renterData, "Não foi possível carregar os locatários."));
                 vehicles = Array.isArray(vehicleData) ? vehicleData : [];
                 populateVehicleSelect();
-                renderRenters(Array.isArray(renterData) ? renterData : []);
+                renters = Array.isArray(renterData) ? renterData : [];
+                applyStatusFilter();
             } catch (error) {
                 renderMessage(error.message || "Não foi possível carregar os locatários.", true);
             }
