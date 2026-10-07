@@ -1,15 +1,15 @@
-﻿<!doctype html>
-<html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none" data-preloader="disable" data-theme="default" data-theme-colors="default">
+<!doctype html>
+<html lang="pt-BR" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none" data-preloader="disable" data-theme="default" data-theme-colors="default">
 
 <head>
 
     <meta charset="utf-8" />
-    <title>Signin | MOVEX SPORTS</title>
+    <title>Entrar | Car Tracker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
-    <meta content="Themesbrand" name="author" />
+    <meta content="Gestão de veículos e locatários da sua empresa." name="description" />
+    <meta content="Car Tracker" name="author" />
     <!-- App favicon -->
-    <link rel="shortcut icon" href="assets/images/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="assets/images/cartracker-logo.svg">
 
     <!-- Layout config Js -->
     <script src="assets/js/layout.js"></script>
@@ -60,8 +60,9 @@
             padding-top: 0 !important;
             overflow: hidden;
             background:
-                linear-gradient(90deg, rgba(2, 8, 20, 0.96) 0%, rgba(2, 8, 20, 0.86) 48%, rgba(2, 8, 20, 0.58) 100%),
-                url("assets/images/mapa%20de%20calor.png") center right / cover no-repeat;
+                radial-gradient(circle at 78% 24%, rgba(63, 201, 182, 0.18), transparent 23%),
+                radial-gradient(circle at 68% 78%, rgba(73, 104, 174, 0.24), transparent 28%),
+                linear-gradient(135deg, #04111d 0%, #092337 52%, #06131f 100%);
         }
 
         .auth-one-bg-position {
@@ -121,6 +122,26 @@
             font-size: 1.04rem;
             line-height: 1.68;
         }
+
+        .auth-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .auth-feature {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 10px 14px;
+            border: 1px solid rgba(104, 240, 193, 0.14);
+            border-radius: 999px;
+            color: #d9e8f5;
+            background: rgba(255, 255, 255, 0.045);
+        }
+
+        .auth-feature i { color: var(--signin-accent); }
 
         .auth-card {
             border: 1px solid rgba(73, 175, 255, 0.16);
@@ -271,16 +292,18 @@
                 <div class="auth-codex-shell">
                     <div class="auth-hero">
                         <a href="landing.html" class="auth-brand text-decoration-none">
-                            <img class="auth-brand-logo" src="assets/images/logo-dark.png" alt="MOVEX SPORTS">
+                            <img class="auth-brand-logo" src="assets/images/cartracker-logo.svg" alt="Car Tracker">
                         </a>
 
-                        <h1 class="auth-hero-title">MOVEX SPORTS<br>A Intelig&ecirc;ncia que <span>Eleva o Jogo</span></h1>
+                        <h1 class="auth-hero-title">Sua frota,<br><span>sempre por perto.</span></h1>
                         <p class="auth-hero-copy">
-                            Tecnologia GPS de ponta para atletas, escolas e centros esportivos que buscam performance profissional.
+                            Controle veículos, locatários e acessos da sua empresa em um único lugar, com uma visão simples e objetiva.
                         </p>
-                        <p class="auth-hero-copy">
-                            Torne cada treino e jogo da sua equipe uma experi&ecirc;ncia profissional
-                        </p>
+                        <div class="auth-features" aria-label="Recursos da plataforma">
+                            <span class="auth-feature"><i class="ri-map-pin-2-line"></i> Gestão centralizada</span>
+                            <span class="auth-feature"><i class="ri-shield-check-line"></i> Acesso seguro</span>
+                            <span class="auth-feature"><i class="ri-car-line"></i> Frota organizada</span>
+                        </div>
 
                     </div>
 
@@ -290,7 +313,7 @@
                             <div class="card-body p-4">
                                 <div class="text-center mt-2">
                                     <h5 class="text-primary">Bem-vindo de volta</h5>
-                                    <p class="text-muted">Entre para continuar na plataforma MOVEX.</p>
+                                    <p class="text-muted">Acesse o painel de gestão da sua frota.</p>
                                 </div>
                                 <div class="p-2 mt-4">
                                     <form id="login-form">
@@ -314,6 +337,7 @@
                                             <button class="btn btn-success w-100" type="submit" id="login-submit">Entrar na plataforma</button>
                                         </div>
                                     </form>
+                                    <p class="text-center text-muted mt-4 mb-0">Ainda não tem uma conta? <a href="signup-movex.html" class="fw-semibold text-decoration-none">Cadastre-se</a></p>
                                 </div>
                             </div>
                             <!-- end card body -->
@@ -333,7 +357,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="text-center">
-                            <p class="mb-0 text-muted">&copy; 2026 MOVEX SPORTS</p>
+                            <p class="mb-0 text-muted">&copy; 2026 Car Tracker</p>
                         </div>
                     </div>
                 </div>
