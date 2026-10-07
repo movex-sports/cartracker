@@ -123,6 +123,54 @@
         tableAlert.setAttribute("role", "alert");
         table.parentElement.parentElement.insertBefore(tableAlert, table.parentElement);
 
+        var confirmationElement = document.createElement("div");
+        confirmationElement.className = "modal fade";
+        confirmationElement.id = "deactivateRenterModal";
+        confirmationElement.tabIndex = -1;
+        confirmationElement.setAttribute("aria-hidden", "true");
+        confirmationElement.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-body p-4 p-sm-5 text-center">
+                        <div class="avatar-lg mx-auto mb-4 rounded-circle bg-danger-subtle text-danger d-flex align-items-center justify-content-center">
+                            <i class="ri-user-unfollow-line fs-2"></i>
+                        </div>
+                        <h4 class="mb-2">Desativar locatário?</h4>
+                        <p class="text-muted mb-2">Você está prestes a desativar <strong id="deactivate-renter-name" class="text-body"></strong>.</p>
+                        <p class="text-muted mb-0"><span id="deactivate-renter-vehicle"></span> ficará sem locatário e disponível para uma nova atribuição.</p>
+                    </div>
+                    <div class="modal-footer border-0 justify-content-center gap-2 px-4 pb-4 pt-0">
+                        <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-danger px-4" id="confirm-deactivate-renter"><i class="ri-user-unfollow-line me-1"></i>Desativar</button>
+                    </div>
+                </div>
+            </div>`;
+        document.body.appendChild(confirmationElement);
+        var confirmationModal = bootstrap.Modal.getOrCreateInstance(confirmationElement);
+
+        function confirmDeactivation(renterName, vehicleName) {
+            document.getElementById("deactivate-renter-name").textContent = renterName;
+            document.getElementById("deactivate-renter-vehicle").textContent = vehicleName || "O veículo vinculado";
+            return new Promise(function (resolve) {
+                var accepted = false;
+                var confirmButton = document.getElementById("confirm-deactivate-renter");
+
+                function accept() {
+                    accepted = true;
+                    confirmationModal.hide();
+                }
+
+                function finish() {
+                    confirmButton.removeEventListener("click", accept);
+                    resolve(accepted);
+                }
+
+                confirmButton.addEventListener("click", accept);
+                confirmationElement.addEventListener("hidden.bs.modal", finish, { once: true });
+                confirmationModal.show();
+            });
+        }
+
         function renderMessage(message, error) {
             tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-5 ${error ? "text-danger" : "text-muted"}">${escapeHtml(message)}</td></tr>`;
         }
@@ -161,12 +209,12 @@
                 return `<tr>
                     <td><div class="d-flex align-items-center gap-2"><span class="avatar-xs rounded-circle ${isActive ? "bg-primary-subtle text-primary" : "bg-light text-muted"} d-inline-flex align-items-center justify-content-center"><i class="ri-user-line"></i></span><strong>${escapeHtml(fullName)}</strong></div></td>
                     <td>${escapeHtml(formatCpf(renter.locatario_cpf))}</td>
-                    <td>${escapeHtml(isActive ? (vehicle ? vehicleLabel(vehicle) : (renter.veiculo_id ? "Veículo #" + renter.veiculo_id : "Sem veículo")) : "Veículo liberado")}</td>
+                    <td>${escapeHtml(isActive ? (vehicle ? vehicleLabel(vehicle) : (renter.veiculo_id ? "Veículo #" + renter.veiculo_id : "Sem veículo")) : "Sem veículo")}</td>
                     <td class="text-wrap">${escapeHtml(address || "—")}</td>
                     <td>${escapeHtml(city || "—")}</td>
                     <td>${escapeHtml(formatZip(renter.locatario_cep))}</td>
                     <td><span class="badge ${isActive ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary"}">${isActive ? "Ativo" : "Inativo"}</span></td>
-                    <td class="text-end">${isActive ? `<button type="button" class="btn btn-sm btn-soft-danger renter-deactivate-btn" data-renter-id="${escapeHtml(renter.locatario_id)}" data-renter-name="${escapeHtml(fullName)}" title="Desativar locatário" aria-label="Desativar ${escapeHtml(fullName)}"><i class="ri-user-unfollow-line me-1"></i>Desativar</button>` : '<span class="text-muted fs-12">Desativado</span>'}</td>
+                    <td class="text-end">${isActive ? `<button type="button" class="btn btn-sm btn-soft-danger renter-deactivate-btn" data-renter-id="${escapeHtml(renter.locatario_id)}" data-renter-name="${escapeHtml(fullName)}" data-vehicle-name="${escapeHtml(vehicle ? vehicleLabel(vehicle) : "O veículo vinculado")}" title="Desativar locatário" aria-label="Desativar ${escapeHtml(fullName)}"><i class="ri-user-unfollow-line me-1"></i>Desativar</button>` : '<span class="text-muted fs-12">Desativado</span>'}</td>
                 </tr>`;
             }).join("");
         }
@@ -185,9 +233,7 @@
             if (!button) return;
 
             var renterName = button.dataset.renterName || "este locatário";
-            var confirmed = window.confirm(
-                "Desativar " + renterName + "?\n\nO veículo vinculado deixará de ser responsabilidade deste locatário e ficará livre para uma nova atribuição."
-            );
+            var confirmed = await confirmDeactivation(renterName, button.dataset.vehicleName);
             if (!confirmed) return;
 
             button.disabled = true;
@@ -206,7 +252,7 @@
                     throw new Error(apiError(data, fallback));
                 }
                 await loadData();
-                showTableAlert("Locatário desativado e veículo liberado com sucesso.", false);
+                showTableAlert("Locatário desativado. O veículo agora está sem locatário.", false);
             } catch (error) {
                 showTableAlert(error.message || "Não foi possível desativar o locatário.", true);
                 button.disabled = false;
