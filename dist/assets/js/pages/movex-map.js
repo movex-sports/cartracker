@@ -91,18 +91,10 @@
         setTimeout(function () { map.invalidateSize(); }, 100);
     }
 
-    function updateMapVehicleStatus(vehicle) {
-        document.getElementById("map-vehicle-label").textContent = vehicle.placa || "VEÍCULO";
-        document.getElementById("map-vehicle-status").textContent = hasCoordinates(vehicle)
-            ? [vehicle.marca, vehicle.modelo, formatNumber(vehicle.velocidade, 0) + " km/h"].filter(Boolean).join(" · ")
-            : [vehicle.marca, vehicle.modelo, "Aguardando coordenadas"].filter(Boolean).join(" · ");
-    }
-
     function selectVehicle(card, vehicle) {
         document.querySelectorAll(".movex-rented-card").forEach(function (item) { item.classList.remove("is-selected"); });
         card.classList.add("is-selected");
         selectedVehicleId = String(vehicle.veiculo_id);
-        updateMapVehicleStatus(vehicle);
         if (hasCoordinates(vehicle)) map.setView([Number(vehicle.latitude), Number(vehicle.longitude)], 16, { animate: true });
     }
 
@@ -116,18 +108,19 @@
         }
 
         list.innerHTML = vehicles.map(function (vehicle, index) {
-            var hasTelemetry = vehicle.status_id != null;
-            return `<article class="movex-rented-card" tabindex="0" role="button" data-rented-index="${index}">
+            var ignitionClass = vehicle.ignicao == null ? "is-ignition-unknown" : vehicle.ignicao ? "is-ignition-on" : "is-ignition-off";
+            var ignitionLabel = vehicle.ignicao == null ? "Sem informação" : vehicle.ignicao ? "Ligada" : "Desligada";
+            return `<article class="movex-rented-card ${ignitionClass}" tabindex="0" role="button" data-rented-index="${index}">
                 <div class="movex-rented-card-header">
                     <span class="movex-rented-icon">${vehicle.foto_thumb_url ? `<img src="${escapeHtml(vehicle.foto_thumb_url)}" alt="Foto de ${escapeHtml(vehicle.marca || "veículo")} ${escapeHtml(vehicle.modelo || "")}"><i class="ri-car-line d-none"></i>` : '<i class="ri-car-line"></i>'}</span>
                     <div class="movex-rented-title">
                         <strong>${escapeHtml(vehicle.placa || "Sem placa")}</strong>
                         <span>${escapeHtml([vehicle.marca, vehicle.modelo].filter(Boolean).join(" · "))}</span>
                     </div>
-                    <span class="movex-telemetry-dot ${hasTelemetry ? "is-online" : ""}" title="${hasTelemetry ? "Telemetria recebida" : "Sem telemetria"}"></span>
+                    <span class="movex-telemetry-dot ${ignitionClass}" title="Ignição ${escapeHtml(ignitionLabel.toLowerCase())}"></span>
                 </div>
                 <div class="movex-telemetry-grid">
-                    <span><small>Ignição</small><b>${vehicle.ignicao == null ? "—" : vehicle.ignicao ? "Ligada" : "Desligada"}</b></span>
+                    <span><small>Ignição</small><b class="movex-ignition-value ${ignitionClass}"><i class="ri-shut-down-line"></i>${escapeHtml(ignitionLabel)}</b></span>
                     <span><small>Bateria</small><b>${formatNumber(vehicle.bateria, 1)}${vehicle.bateria == null ? "" : " V"}</b></span>
                     <span><small>Velocidade</small><b>${formatNumber(vehicle.velocidade, 0)}${vehicle.velocidade == null ? "" : " km/h"}</b></span>
                 </div>
@@ -148,7 +141,6 @@
             var selectedCard = selectedIndex >= 0 ? list.querySelector('[data-rented-index="' + selectedIndex + '"]') : null;
             if (selectedCard) {
                 selectedCard.classList.add("is-selected");
-                updateMapVehicleStatus(vehicles[selectedIndex]);
             }
             else selectedVehicleId = null;
         }
@@ -162,7 +154,7 @@
                 bounds.push(point);
                 var carIcon = L.divIcon({
                     className: "movex-car-map-marker-wrapper",
-                    html: '<div class="movex-car-map-marker"><i class="ri-car-fill"></i><span></span></div>',
+                    html: '<div class="movex-car-map-marker ' + (vehicle.ignicao == null ? "is-ignition-unknown" : vehicle.ignicao ? "is-ignition-on" : "is-ignition-off") + '"><i class="ri-car-fill"></i><span></span></div>',
                     iconSize: [42, 48],
                     iconAnchor: [21, 44],
                     tooltipAnchor: [0, -38]
