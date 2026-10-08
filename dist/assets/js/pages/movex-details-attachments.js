@@ -38,9 +38,13 @@
     var preview = document.getElementById("movex-attachment-preview");
     var objectUrls = [];
     var selectedPhotos = [];
+    var selectedPdfFile = null;
     var existingPhotos = [];
+    var existingCnh = null;
     var currentVehicleId = null;
+    var currentRenterId = null;
     var photoRefreshTimer = null;
+    var cnhRefreshTimer = null;
     var apiBaseUrl = "https://cartracker-api.onrender.com";
     var saveButton = document.getElementById("movex-save-attachments");
     var attachmentAlert = document.getElementById("movex-attachment-alert");
@@ -49,6 +53,7 @@
         objectUrls.forEach(function (url) { URL.revokeObjectURL(url); });
         objectUrls = [];
         selectedPhotos = [];
+        selectedPdfFile = null;
         preview.innerHTML = "";
         input.value = "";
     }
@@ -97,6 +102,38 @@
         }
     }
 
+    function renderCnh() {
+        preview.className = "";
+        if (!existingCnh) {
+            preview.innerHTML = '<div class="text-center text-muted border rounded-3 py-4 mt-3"><i class="ri-file-pdf-2-line fs-2 d-block mb-2"></i>Nenhuma habilitação anexada.</div>';
+            return;
+        }
+        var fileName = existingCnh.nome_arquivo || existingCnh.filename || existingCnh.nome || "Habilitação anexada.pdf";
+        preview.innerHTML = '<div class="movex-pdf-preview"><i class="ri-file-pdf-2-fill"></i><div class="flex-grow-1 overflow-hidden"><strong class="d-block text-truncate">' + escapeHtml(fileName) + '</strong><span class="text-muted fs-12">Documento armazenado com segurança</span></div><a class="btn btn-sm btn-soft-primary" href="' + escapeHtml(existingCnh.documento_url) + '" target="_blank" rel="noopener"><i class="ri-eye-line me-1"></i>Visualizar</a><button class="btn btn-sm btn-soft-danger" type="button" id="movex-delete-cnh"><i class="ri-delete-bin-line"></i></button></div>';
+        document.getElementById("movex-delete-cnh").addEventListener("click", function () { deleteCnh(this); });
+    }
+
+    async function loadRenterCnh() {
+        if (!currentRenterId) return;
+        preview.innerHTML = '<div class="text-center text-muted py-4"><span class="spinner-border spinner-border-sm me-2"></span>Carregando habilitação...</div>';
+        try {
+            var response = await apiRequest(apiBaseUrl + "/locatarios/" + encodeURIComponent(currentRenterId) + "/documentos/cnh", { method: "GET", cache: "no-store" });
+            if (response.status === 404) {
+                existingCnh = null;
+                renderCnh();
+                return;
+            }
+            var data = await response.json().catch(function () { return {}; });
+            if (!response.ok) throw new Error(apiMessage(data, "Não foi possível carregar a habilitação."));
+            existingCnh = data;
+            renderCnh();
+            window.clearTimeout(cnhRefreshTimer);
+            cnhRefreshTimer = window.setTimeout(loadRenterCnh, 14 * 60 * 1000);
+        } catch (error) {
+            preview.innerHTML = '<div class="alert alert-danger mt-3 mb-0">' + escapeHtml(error.message) + '</div>';
+        }
+    }
+
     function updateTableThumbnail(url) {
         var row = detailsBody?.querySelector('tr[data-vehicle-id="' + CSS.escape(String(currentVehicleId)) + '"]');
         var holder = row?.querySelector(".movex-vehicle-thumb");
@@ -124,6 +161,7 @@
 
         if (isVehiclePage) {
             currentVehicleId = row.dataset.vehicleId || null;
+            currentRenterId = null;
             document.getElementById("movex-detail-grid").innerHTML = field("Placa", cellText(cells, 1)) + field("Ano", cellText(cells, 2)) + field("Combustível", cellText(cells, 3)) + field("Capacidade do tanque", cellText(cells, 4)) + field("Consumo", cellText(cells, 5)) + field("Velocidade máxima", cellText(cells, 6)) + field("Odômetro", cellText(cells, 7));
             document.getElementById("movex-attachment-title").textContent = "Fotos do veículo";
             document.getElementById("movex-attachment-copy").textContent = "Adicione fotos externas, internas e de identificação.";
@@ -140,6 +178,7 @@
             saveButton.title = "";
         } else {
             currentVehicleId = null;
+            currentRenterId = row.dataset.renterId || null;
             document.getElementById("movex-detail-grid").innerHTML = field("CPF", cellText(cells, 1)) + field("Veículo", cellText(cells, 2)) + field("Endereço", cellText(cells, 3)) + field("Cidade/UF", cellText(cells, 4)) + field("CEP", cellText(cells, 5)) + field("Status", cellText(cells, 6));
             document.getElementById("movex-attachment-title").textContent = "Habilitação do locatário";
             document.getElementById("movex-attachment-copy").textContent = "Anexe a CNH digitalizada para consulta administrativa.";
@@ -148,16 +187,17 @@
             document.getElementById("movex-upload-help").textContent = "Somente arquivo PDF";
             input.accept = "application/pdf";
             input.multiple = false;
-            document.getElementById("movex-integration-badge").className = "badge bg-warning-subtle text-warning";
-            document.getElementById("movex-integration-badge").textContent = "Integração pendente";
+            document.getElementById("movex-integration-badge").className = "badge bg-success-subtle text-success";
+            document.getElementById("movex-integration-badge").textContent = "API conectada";
             document.getElementById("movex-thumb-option").classList.add("d-none");
-            document.querySelector("#movex-integration-note span").textContent = "O PDF pode ser selecionado e visualizado agora. O envio definitivo será habilitado quando a rota estiver disponível na API.";
-            saveButton.innerHTML = '<i class="ri-upload-cloud-2-line me-1"></i>Salvar habilitação';
+            document.querySelector("#movex-integration-note span").textContent = "Somente PDF, com no máximo 10 MB. Um novo envio substitui automaticamente a habilitação anterior.";
+            saveButton.innerHTML = '<i class="ri-upload-cloud-2-line me-1"></i>Enviar habilitação';
             saveButton.disabled = true;
-            saveButton.title = "Aguardando integração com a API";
+            saveButton.title = "Selecione um PDF";
         }
         detailModal.show();
         if (isVehiclePage) loadVehiclePhotos();
+        else loadRenterCnh();
     }
 
     var detailsTable = document.getElementById("students-table");
@@ -287,15 +327,89 @@
             objectUrls = [];
             preview.innerHTML = "";
             var file = files[0];
+            if (file.type !== "application/pdf" && !/\.pdf$/i.test(file.name)) {
+                selectedPdfFile = null;
+                showAttachmentAlert("Selecione um arquivo PDF válido.", true);
+                saveButton.disabled = true;
+                input.value = "";
+                renderCnh();
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                selectedPdfFile = null;
+                showAttachmentAlert("O PDF deve possuir no máximo 10 MB.", true);
+                saveButton.disabled = true;
+                input.value = "";
+                renderCnh();
+                return;
+            }
+            selectedPdfFile = file;
             var pdfUrl = URL.createObjectURL(file);
             objectUrls.push(pdfUrl);
             preview.className = "movex-pdf-preview";
-            preview.innerHTML = '<i class="ri-file-pdf-2-fill"></i><div class="flex-grow-1 overflow-hidden"><strong class="d-block text-truncate">' + escapeHtml(file.name) + '</strong><span class="text-muted fs-12">' + (file.size / 1024 / 1024).toFixed(2).replace(".", ",") + ' MB · pronto para integração</span></div><a class="btn btn-sm btn-soft-primary" href="' + pdfUrl + '" target="_blank" rel="noopener"><i class="ri-eye-line me-1"></i>Visualizar PDF</a>';
+            preview.innerHTML = '<i class="ri-file-pdf-2-fill"></i><div class="flex-grow-1 overflow-hidden"><strong class="d-block text-truncate">' + escapeHtml(file.name) + '</strong><span class="text-muted fs-12">' + (file.size / 1024 / 1024).toFixed(2).replace(".", ",") + ' MB · pronto para envio</span></div><a class="btn btn-sm btn-soft-primary" href="' + pdfUrl + '" target="_blank" rel="noopener"><i class="ri-eye-line me-1"></i>Visualizar PDF</a>';
+            saveButton.disabled = false;
+            saveButton.title = "";
         }
     });
 
+    async function deleteCnh(button) {
+        if (button.dataset.confirmDelete !== "true") {
+            button.dataset.confirmDelete = "true";
+            button.innerHTML = '<i class="ri-check-line me-1"></i>Confirmar';
+            button.classList.remove("btn-soft-danger");
+            button.classList.add("btn-danger");
+            window.setTimeout(function () {
+                if (!button.isConnected) return;
+                button.dataset.confirmDelete = "false";
+                button.innerHTML = '<i class="ri-delete-bin-line"></i>';
+                button.classList.add("btn-soft-danger");
+                button.classList.remove("btn-danger");
+            }, 3000);
+            return;
+        }
+        button.disabled = true;
+        try {
+            var response = await apiRequest(apiBaseUrl + "/locatarios/" + encodeURIComponent(currentRenterId) + "/documentos/cnh", { method: "DELETE" });
+            if (!response.ok) {
+                var data = await response.json().catch(function () { return {}; });
+                throw new Error(apiMessage(data, "Não foi possível excluir a habilitação."));
+            }
+            existingCnh = null;
+            showAttachmentAlert("Habilitação excluída com sucesso.", false);
+            renderCnh();
+        } catch (error) {
+            showAttachmentAlert(error.message || "Não foi possível excluir a habilitação.", true);
+            button.disabled = false;
+        }
+    }
+
     saveButton.addEventListener("click", async function () {
-        if (!isVehiclePage || !currentVehicleId || !selectedPhotos.length) return;
+        if (isRenterPage) {
+            if (!currentRenterId || !selectedPdfFile) return;
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Enviando...';
+            attachmentAlert.className = "alert d-none";
+            try {
+                var cnhFormData = new FormData();
+                cnhFormData.append("file", selectedPdfFile);
+                var cnhResponse = await apiRequest(apiBaseUrl + "/locatarios/" + encodeURIComponent(currentRenterId) + "/documentos/cnh", { method: "POST", body: cnhFormData });
+                var cnhData = await cnhResponse.json().catch(function () { return {}; });
+                if (!cnhResponse.ok) throw new Error(apiMessage(cnhData, cnhResponse.status === 415 ? "Apenas arquivos PDF são aceitos." : "Não foi possível enviar a habilitação."));
+                selectedPdfFile = null;
+                input.value = "";
+                showAttachmentAlert(existingCnh ? "Habilitação substituída com sucesso." : "Habilitação enviada com sucesso.", false);
+                await loadRenterCnh();
+            } catch (error) {
+                showAttachmentAlert(error.message || "Não foi possível enviar a habilitação.", true);
+            } finally {
+                saveButton.innerHTML = '<i class="ri-upload-cloud-2-line me-1"></i>Enviar habilitação';
+                saveButton.disabled = !selectedPdfFile;
+            }
+            return;
+        }
+
+        if (!currentVehicleId || !selectedPhotos.length) return;
         saveButton.disabled = true;
         saveButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Enviando...';
         attachmentAlert.className = "alert d-none";
@@ -325,7 +439,9 @@
 
     modalElement.addEventListener("hidden.bs.modal", function () {
         window.clearTimeout(photoRefreshTimer);
+        window.clearTimeout(cnhRefreshTimer);
         photoRefreshTimer = null;
+        cnhRefreshTimer = null;
         clearPreviews();
     });
 })();

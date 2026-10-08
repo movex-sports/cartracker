@@ -283,7 +283,7 @@
                 var city = [renter.locatario_cidade, renter.locatario_estado].filter(Boolean).join("/");
                 var isActive = renter.status !== false;
                 var fullName = [renter.locatario_nome, renter.locatario_sobrenome].filter(Boolean).join(" ");
-                return `<tr>
+                return `<tr data-renter-id="${escapeHtml(renter.locatario_id)}">
                     <td><div class="d-flex align-items-center gap-2"><span class="avatar-xs rounded-circle ${isActive ? "bg-primary-subtle text-primary" : "bg-light text-muted"} d-inline-flex align-items-center justify-content-center"><i class="ri-user-line"></i></span><strong>${escapeHtml(fullName)}</strong></div></td>
                     <td>${escapeHtml(formatCpf(renter.locatario_cpf))}</td>
                     <td>${escapeHtml(isActive ? (vehicle ? vehicleLabel(vehicle) : (renter.veiculo_id ? "Veículo #" + renter.veiculo_id : "Sem veículo")) : "Sem veículo")}</td>

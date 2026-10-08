@@ -19,7 +19,7 @@
 .movex-photo-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; }
 .movex-photo-actions button { position: static; }
 .movex-photo-thumb-badge { position: absolute; left: 8px; bottom: 8px; padding: 5px 9px; border-radius: 999px; color: #fff; background: rgba(10, 179, 156, .92); font-size: 11px; font-weight: 700; }
-.movex-pdf-preview { display: flex; align-items: center; gap: 14px; margin-top: 16px; padding: 16px; border: 1px solid #e8edf3; border-radius: 12px; background: #fff; }
+.movex-pdf-preview { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 16px; padding: 16px; border: 1px solid #e8edf3; border-radius: 12px; background: #fff; }
 .movex-pdf-preview i { color: #f06548; font-size: 34px; }
 .movex-integration-note { display: flex; gap: 9px; align-items: flex-start; margin-top: 16px; padding: 12px 14px; border-radius: 10px; color: #795c16; background: #fff7df; font-size: 13px; }
 @media (max-width: 767.98px) { .movex-detail-grid, .movex-photo-preview { grid-template-columns: 1fr; } }
