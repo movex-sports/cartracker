@@ -1,7 +1,14 @@
+.page-content > .container-fluid {
+    width: 100%;
+    max-width: none !important;
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
+}
+
 .movex-route-card {
     display: grid;
-    grid-template-columns: minmax(320px, 390px) minmax(0, 1fr);
-    min-height: 610px;
+    grid-template-columns: minmax(390px, 440px) minmax(0, 1fr);
+    min-height: 560px;
     margin-bottom: 1.5rem;
     overflow: hidden;
     border: 1px solid rgba(64, 81, 137, .24);
@@ -11,7 +18,7 @@
 }
 
 .movex-route-sidebar {
-    padding: 1.5rem;
+    padding: 1.15rem;
     border-right: 1px solid rgba(64, 81, 137, .18);
     min-width: 0;
     background: linear-gradient(180deg, rgba(64, 81, 137, .035), rgba(10, 179, 156, .018));
@@ -74,16 +81,16 @@
 
 .movex-rented-list {
     display: grid;
-    gap: .85rem;
-    max-height: 525px;
-    margin-top: 1.25rem;
+    gap: .65rem;
+    max-height: 485px;
+    margin-top: .9rem;
     padding-right: .35rem;
     overflow-y: auto;
 }
 
 .movex-rented-card {
     position: relative;
-    padding: 1rem 1rem .9rem 1.15rem;
+    padding: .75rem .85rem .7rem 1rem;
     overflow: hidden;
     border: 1px solid var(--vz-border-color);
     border-radius: .75rem;
@@ -114,14 +121,14 @@
     transform: translateY(-1px);
 }
 
-.movex-rented-card-header { display: flex; align-items: flex-start; gap: .75rem; }
-.movex-rented-icon { display: grid; flex: 0 0 48px; height: 48px; place-items: center; border-radius: .65rem; background: var(--vz-primary-bg-subtle); color: var(--vz-primary); font-size: 1.45rem; }
+.movex-rented-card-header { display: flex; align-items: flex-start; gap: .65rem; }
+.movex-rented-icon { display: grid; flex: 0 0 44px; height: 44px; place-items: center; border-radius: .65rem; background: var(--vz-primary-bg-subtle); color: var(--vz-primary); font-size: 1.35rem; }
 .movex-rented-icon { overflow: hidden; }
 .movex-rented-icon img { width: 100%; height: 100%; object-fit: cover; }
 .movex-rented-title { min-width: 0; flex: 1; }
 .movex-rented-title strong { display: block; font-size: .9rem; }
 .movex-rented-title span { display: block; margin-top: .1rem; color: var(--vz-secondary-color); font-size: .73rem; }
-.movex-rented-title .movex-renter-name { display: flex; align-items: center; gap: .3rem; margin-top: .35rem; overflow: hidden; color: var(--vz-body-color); font-size: .7rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.movex-rented-title .movex-renter-name { display: flex; align-items: center; gap: .3rem; margin-top: .2rem; overflow: hidden; color: var(--vz-body-color); font-size: .7rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .movex-renter-name i { color: var(--vz-primary); font-size: .82rem; }
 .movex-telemetry-dot { flex: 0 0 9px; width: 9px; height: 9px; margin-top: .3rem; border-radius: 50%; background: #adb5bd; box-shadow: 0 0 0 4px rgba(173, 181, 189, .14); }
 .movex-telemetry-dot.is-ignition-on { background: #0ab39c; box-shadow: 0 0 0 4px rgba(10, 179, 156, .15); animation: movex-ignition-pulse 1.8s ease-out infinite; }
@@ -131,7 +138,7 @@
 .movex-ignition-value.is-ignition-off { color: #526071; background: rgba(100, 116, 139, .12); }
 .movex-ignition-value.is-ignition-unknown { color: #878a99; background: rgba(173, 181, 189, .12); }
 @keyframes movex-ignition-pulse { 0% { box-shadow: 0 0 0 0 rgba(10, 179, 156, .35); } 70% { box-shadow: 0 0 0 8px rgba(10, 179, 156, 0); } 100% { box-shadow: 0 0 0 0 rgba(10, 179, 156, 0); } }
-.movex-telemetry-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .45rem; margin-top: .8rem; padding-top: .75rem; border-top: 1px solid var(--vz-border-color); }
+.movex-telemetry-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .45rem; margin-top: .55rem; padding-top: .55rem; border-top: 1px solid var(--vz-border-color); }
 .movex-telemetry-grid span { min-width: 0; }
 .movex-telemetry-grid small { display: block; color: var(--vz-secondary-color); font-size: .62rem; }
 .movex-telemetry-grid b { display: block; margin-top: .15rem; overflow: hidden; color: var(--vz-body-color); font-size: .72rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
@@ -139,7 +146,7 @@
 .movex-rented-details span { display: flex; align-items: center; gap: .45rem; min-width: 0; color: var(--vz-secondary-color); font-size: .74rem; }
 .movex-rented-details i { color: var(--vz-body-color); font-size: .95rem; }
 .movex-rented-details b { overflow: hidden; color: var(--vz-body-color); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
-.movex-rented-meta { display: flex; justify-content: space-between; gap: .75rem; margin-top: .7rem; color: var(--vz-secondary-color); font-size: .65rem; }
+.movex-rented-meta { display: flex; justify-content: space-between; gap: .75rem; margin-top: .5rem; color: var(--vz-secondary-color); font-size: .65rem; }
 .movex-rented-meta span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .movex-rented-empty { padding: 2.5rem 1rem; border: 1px dashed var(--vz-border-color); border-radius: .75rem; color: var(--vz-secondary-color); text-align: center; }
 
@@ -221,7 +228,7 @@
 .movex-coordinate-input p.is-success { color: #0ab39c; }
 .movex-coordinate-input p.is-error { color: #f06548; }
 
-.movex-map-panel { position: relative; min-height: 610px; background: #dbe4ea; }
+.movex-map-panel { position: relative; min-height: 560px; background: #dbe4ea; }
 #movex-route-map { position: absolute; inset: 0; z-index: 1; }
 .movex-map-legend {
     position: absolute;
@@ -266,12 +273,14 @@
 .movex-route-marker.is-end { background: #f06548; }
 
 @media (max-width: 991.98px) {
+    .page-content > .container-fluid { padding-right: 1rem; padding-left: 1rem; }
     .movex-route-card { grid-template-columns: 1fr; }
     .movex-route-sidebar { border-right: 0; border-bottom: 1px solid var(--vz-border-color); }
     .movex-map-panel { min-height: 500px; }
 }
 
 @media (max-width: 575.98px) {
+    .page-content > .container-fluid { padding-right: .75rem; padding-left: .75rem; }
     .movex-route-sidebar { padding: 1rem; }
     .movex-route-heading { display: grid; }
     .movex-map-panel { min-height: 420px; }
