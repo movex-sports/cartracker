@@ -66,19 +66,6 @@
     box-shadow: 0 0 0 4px rgba(247, 184, 75, .14);
 }
 
-.movex-route-count {
-    display: inline-grid;
-    min-width: 2rem;
-    height: 2rem;
-    padding: 0 .55rem;
-    place-items: center;
-    border-radius: 999px;
-    background: var(--vz-primary);
-    color: #fff;
-    font-size: .78rem;
-    font-weight: 700;
-}
-
 .movex-rented-list {
     display: grid;
     gap: .65rem;

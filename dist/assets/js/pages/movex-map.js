@@ -118,8 +118,6 @@
 
     function renderRentedVehicles(vehicles) {
         var list = document.getElementById("rented-vehicle-list");
-        var count = document.getElementById("rented-vehicle-count");
-        count.textContent = String(vehicles.length);
         if (!vehicles.length) {
             list.innerHTML = searchTerm
                 ? '<div class="movex-rented-empty"><i class="ri-search-line fs-2 d-block mb-2"></i>Nenhum veículo ou locatário encontrado.</div>'
