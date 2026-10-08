@@ -76,5 +76,6 @@
         }
     }
 
+    window.movexRenewSession = renewSession;
     window.movexSessionReady = renewSession();
 })();

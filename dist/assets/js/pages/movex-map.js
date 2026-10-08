@@ -4,6 +4,11 @@
     var apiBaseUrl = "https://cartracker-api.onrender.com";
     var map;
     var telemetryLayer;
+    var refreshTimer = null;
+    var requestInProgress = false;
+    var hasFittedTelemetry = false;
+    var selectedVehicleId = null;
+    var refreshIntervalMs = 10000;
 
     function getAccessToken() {
         return sessionStorage.getItem("movex_access_token") || sessionStorage.getItem("access_token") || "";
@@ -18,6 +23,10 @@
     }
 
     async function fetchWithAuthentication(path) {
+        var expiresAt = Number(sessionStorage.getItem("movex_token_expires_at")) || 0;
+        if (expiresAt && expiresAt - Date.now() < 60000 && typeof window.movexRenewSession === "function") {
+            await window.movexRenewSession();
+        }
         var token = getAccessToken();
         if (!token) {
             clearSessionAndRedirect();
@@ -82,13 +91,18 @@
         setTimeout(function () { map.invalidateSize(); }, 100);
     }
 
-    function selectVehicle(card, vehicle) {
-        document.querySelectorAll(".movex-rented-card").forEach(function (item) { item.classList.remove("is-selected"); });
-        card.classList.add("is-selected");
+    function updateMapVehicleStatus(vehicle) {
         document.getElementById("map-vehicle-label").textContent = vehicle.placa || "VEÍCULO";
         document.getElementById("map-vehicle-status").textContent = hasCoordinates(vehicle)
             ? [vehicle.marca, vehicle.modelo, formatNumber(vehicle.velocidade, 0) + " km/h"].filter(Boolean).join(" · ")
             : [vehicle.marca, vehicle.modelo, "Aguardando coordenadas"].filter(Boolean).join(" · ");
+    }
+
+    function selectVehicle(card, vehicle) {
+        document.querySelectorAll(".movex-rented-card").forEach(function (item) { item.classList.remove("is-selected"); });
+        card.classList.add("is-selected");
+        selectedVehicleId = String(vehicle.veiculo_id);
+        updateMapVehicleStatus(vehicle);
         if (hasCoordinates(vehicle)) map.setView([Number(vehicle.latitude), Number(vehicle.longitude)], 16, { animate: true });
     }
 
@@ -121,6 +135,16 @@
             </article>`;
         }).join("");
 
+        if (selectedVehicleId) {
+            var selectedIndex = vehicles.findIndex(function (vehicle) { return String(vehicle.veiculo_id) === selectedVehicleId; });
+            var selectedCard = selectedIndex >= 0 ? list.querySelector('[data-rented-index="' + selectedIndex + '"]') : null;
+            if (selectedCard) {
+                selectedCard.classList.add("is-selected");
+                updateMapVehicleStatus(vehicles[selectedIndex]);
+            }
+            else selectedVehicleId = null;
+        }
+
         if (telemetryLayer) {
             telemetryLayer.clearLayers();
             var bounds = [];
@@ -128,15 +152,25 @@
                 if (!hasCoordinates(vehicle)) return;
                 var point = [Number(vehicle.latitude), Number(vehicle.longitude)];
                 bounds.push(point);
-                var marker = L.circleMarker(point, { radius: 9, color: "#fff", weight: 3, fillColor: "#0ab39c", fillOpacity: 1 }).addTo(telemetryLayer);
+                var carIcon = L.divIcon({
+                    className: "movex-car-map-marker-wrapper",
+                    html: '<div class="movex-car-map-marker"><i class="ri-car-fill"></i><span></span></div>',
+                    iconSize: [42, 48],
+                    iconAnchor: [21, 44],
+                    tooltipAnchor: [0, -38]
+                });
+                var marker = L.marker(point, { icon: carIcon, keyboard: true, title: vehicle.placa || "Veículo" }).addTo(telemetryLayer);
                 marker.bindTooltip(escapeHtml(vehicle.placa || "Veículo"));
                 marker.on("click", function () {
                     var card = list.querySelector('[data-rented-index="' + index + '"]');
                     if (card) selectVehicle(card, vehicle);
                 });
             });
-            if (bounds.length) map.fitBounds(bounds, { padding: [45, 45], maxZoom: 16 });
-            else map.fitWorld();
+            if (!hasFittedTelemetry) {
+                if (bounds.length) map.fitBounds(bounds, { padding: [45, 45], maxZoom: 16 });
+                else map.fitWorld();
+                hasFittedTelemetry = true;
+            }
         }
 
         list.querySelectorAll(".movex-rented-card").forEach(function (card) {
@@ -152,6 +186,8 @@
 
     async function loadRentedVehicles() {
         var list = document.getElementById("rented-vehicle-list");
+        if (requestInProgress || document.hidden) return;
+        requestInProgress = true;
         try {
             var response = await fetchWithAuthentication("/dados-crus/veiculos-alugados");
             var vehicles = await response.json().catch(function () { return []; });
@@ -159,14 +195,35 @@
             renderRentedVehicles(Array.isArray(vehicles) ? vehicles : []);
         } catch (error) {
             list.innerHTML = '<div class="movex-rented-empty text-danger"><i class="ri-error-warning-line fs-2 d-block mb-2"></i>' + escapeHtml(error.message || "Não foi possível carregar a frota.") + '</div>';
+        } finally {
+            requestInProgress = false;
         }
+    }
+
+    function scheduleRefresh() {
+        window.clearInterval(refreshTimer);
+        refreshTimer = window.setInterval(loadRentedVehicles, refreshIntervalMs);
+    }
+
+    function handleVisibilityChange() {
+        if (document.hidden) {
+            window.clearInterval(refreshTimer);
+            refreshTimer = null;
+            return;
+        }
+        loadRentedVehicles();
+        scheduleRefresh();
     }
 
     function initialize() {
         initializeMap();
         Promise.resolve(window.movexSessionReady).then(function (ready) {
-            if (ready !== false) loadRentedVehicles();
+            if (ready !== false) {
+                loadRentedVehicles();
+                scheduleRefresh();
+            }
         });
+        document.addEventListener("visibilitychange", handleVisibilityChange);
     }
 
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initialize);
