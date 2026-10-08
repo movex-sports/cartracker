@@ -35,10 +35,12 @@
     var input = document.getElementById("movex-attachment-input");
     var preview = document.getElementById("movex-attachment-preview");
     var objectUrls = [];
+    var selectedPhotos = [];
 
     function clearPreviews() {
         objectUrls.forEach(function (url) { URL.revokeObjectURL(url); });
         objectUrls = [];
+        selectedPhotos = [];
         preview.innerHTML = "";
         input.value = "";
     }
@@ -61,7 +63,7 @@
             document.getElementById("movex-attachment-copy").textContent = "Adicione fotos externas, internas e de identificação.";
             document.getElementById("movex-upload-icon").className = "ri-image-add-line";
             document.getElementById("movex-upload-title").textContent = "Selecionar fotos";
-            document.getElementById("movex-upload-help").textContent = "PNG, JPG ou WEBP — múltiplos arquivos";
+            document.getElementById("movex-upload-help").textContent = "PNG, JPG ou WEBP — selecione várias ou adicione em etapas";
             input.accept = "image/png,image/jpeg,image/webp";
             input.multiple = true;
         } else {
@@ -106,23 +108,42 @@
     if (detailsBody) new MutationObserver(prepareRows).observe(detailsBody, { childList: true });
     prepareRows();
 
-    input.addEventListener("change", function () {
-        var files = Array.from(input.files || []);
+    function renderPhotoPreviews() {
         objectUrls.forEach(function (url) { URL.revokeObjectURL(url); });
         objectUrls = [];
-        preview.innerHTML = "";
+        preview.innerHTML = '<div class="d-flex align-items-center justify-content-between grid-column-full"><strong>' + selectedPhotos.length + (selectedPhotos.length === 1 ? ' foto selecionada' : ' fotos selecionadas') + '</strong><small class="text-muted">Clique acima para adicionar mais</small></div>';
+        selectedPhotos.forEach(function (file, index) {
+            var url = URL.createObjectURL(file);
+            objectUrls.push(url);
+            var item = document.createElement("div");
+            item.className = "movex-photo-item";
+            item.innerHTML = '<img alt="Prévia da foto"><button type="button" aria-label="Remover foto"><i class="ri-close-line"></i></button>';
+            item.querySelector("img").src = url;
+            item.querySelector("button").addEventListener("click", function () {
+                selectedPhotos.splice(index, 1);
+                renderPhotoPreviews();
+            });
+            preview.appendChild(item);
+        });
+    }
+
+    input.addEventListener("change", function () {
+        var files = Array.from(input.files || []);
         if (!files.length) return;
         if (isVehiclePage) {
             preview.className = "movex-photo-preview";
             files.forEach(function (file) {
-                var url = URL.createObjectURL(file); objectUrls.push(url);
-                var item = document.createElement("div"); item.className = "movex-photo-item";
-                item.innerHTML = '<img alt="Prévia da foto"><button type="button" aria-label="Remover foto"><i class="ri-close-line"></i></button>';
-                item.querySelector("img").src = url;
-                item.querySelector("button").addEventListener("click", function () { URL.revokeObjectURL(url); item.remove(); });
-                preview.appendChild(item);
+                var alreadySelected = selectedPhotos.some(function (selected) {
+                    return selected.name === file.name && selected.size === file.size && selected.lastModified === file.lastModified;
+                });
+                if (!alreadySelected) selectedPhotos.push(file);
             });
+            input.value = "";
+            renderPhotoPreviews();
         } else {
+            objectUrls.forEach(function (url) { URL.revokeObjectURL(url); });
+            objectUrls = [];
+            preview.innerHTML = "";
             var file = files[0];
             var pdfUrl = URL.createObjectURL(file);
             objectUrls.push(pdfUrl);

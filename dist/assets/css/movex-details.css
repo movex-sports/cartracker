@@ -10,6 +10,7 @@
 .movex-dropzone:hover { border-color: #0ab39c; background: #f2fbf9; }
 .movex-dropzone i { display: block; margin-bottom: 8px; color: #0ab39c; font-size: 32px; }
 .movex-photo-preview { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+.grid-column-full { grid-column: 1 / -1; }
 .movex-photo-item { position: relative; overflow: hidden; aspect-ratio: 4/3; border: 1px solid #e8edf3; border-radius: 12px; background: #eef1f5; }
 .movex-photo-item img { width: 100%; height: 100%; object-fit: cover; }
 .movex-photo-item button { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; color: #fff; background: rgba(20, 28, 43, .78); }
