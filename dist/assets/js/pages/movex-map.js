@@ -9,6 +9,8 @@
     var hasFittedTelemetry = false;
     var selectedVehicleId = null;
     var refreshIntervalMs = 10000;
+    var latestVehicles = [];
+    var searchTerm = "";
 
     function getAccessToken() {
         return sessionStorage.getItem("movex_access_token") || sessionStorage.getItem("access_token") || "";
@@ -73,6 +75,22 @@
         return Number.isNaN(date.getTime()) ? "Sem telemetria" : date.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "medium" });
     }
 
+    function renterName(vehicle) {
+        return [vehicle.locatario_nome, vehicle.locatario_sobrenome].filter(Boolean).join(" ");
+    }
+
+    function normalizeSearch(value) {
+        return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    }
+
+    function applyFleetFilter() {
+        var query = normalizeSearch(searchTerm);
+        var filtered = query ? latestVehicles.filter(function (vehicle) {
+            return normalizeSearch([renterName(vehicle), vehicle.placa, vehicle.modelo, vehicle.marca].filter(Boolean).join(" ")).includes(query);
+        }) : latestVehicles;
+        renderRentedVehicles(filtered);
+    }
+
     function initializeMap() {
         var error = document.getElementById("movex-route-map-error");
         if (!window.L) {
@@ -103,7 +121,10 @@
         var count = document.getElementById("rented-vehicle-count");
         count.textContent = String(vehicles.length);
         if (!vehicles.length) {
-            list.innerHTML = '<div class="movex-rented-empty"><i class="ri-car-line fs-2 d-block mb-2"></i>Nenhum veículo alugado no momento.</div>';
+            list.innerHTML = searchTerm
+                ? '<div class="movex-rented-empty"><i class="ri-search-line fs-2 d-block mb-2"></i>Nenhum veículo ou locatário encontrado.</div>'
+                : '<div class="movex-rented-empty"><i class="ri-car-line fs-2 d-block mb-2"></i>Nenhum veículo alugado no momento.</div>';
+            if (telemetryLayer) telemetryLayer.clearLayers();
             return;
         }
 
@@ -116,6 +137,7 @@
                     <div class="movex-rented-title">
                         <strong>${escapeHtml(vehicle.placa || "Sem placa")}</strong>
                         <span>${escapeHtml([vehicle.marca, vehicle.modelo].filter(Boolean).join(" · "))}</span>
+                        <span class="movex-renter-name"><i class="ri-user-3-line"></i>${escapeHtml(renterName(vehicle) || "Locatário não informado")}</span>
                     </div>
                     <span class="movex-telemetry-dot ${ignitionClass}" title="Ignição ${escapeHtml(ignitionLabel.toLowerCase())}"></span>
                 </div>
@@ -192,7 +214,8 @@
             var response = await fetchWithAuthentication("/dados-crus/veiculos-alugados");
             var vehicles = await response.json().catch(function () { return []; });
             if (!response.ok) throw new Error(apiError(vehicles, "Não foi possível carregar os veículos alugados."));
-            renderRentedVehicles(Array.isArray(vehicles) ? vehicles : []);
+            latestVehicles = Array.isArray(vehicles) ? vehicles : [];
+            applyFleetFilter();
         } catch (error) {
             list.innerHTML = '<div class="movex-rented-empty text-danger"><i class="ri-error-warning-line fs-2 d-block mb-2"></i>' + escapeHtml(error.message || "Não foi possível carregar a frota.") + '</div>';
         } finally {
@@ -217,6 +240,11 @@
 
     function initialize() {
         initializeMap();
+        var searchInput = document.getElementById("rented-vehicle-search");
+        searchInput?.addEventListener("input", function () {
+            searchTerm = searchInput.value;
+            applyFleetFilter();
+        });
         Promise.resolve(window.movexSessionReady).then(function (ready) {
             if (ready !== false) {
                 loadRentedVehicles();

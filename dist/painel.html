@@ -1149,12 +1149,19 @@
                         <div class="col">
 
                             <div class="h-100">
-                                <section class="movex-route-card" aria-labelledby="movex-route-title">
+                                <div class="row mb-3 pb-1">
+                                    <div class="col-12">
+                                        <h4 class="fs-16 mb-1">Bem-vindo!</h4>
+                                        <p class="text-muted mb-0">Acompanhe seus veículos alugados e a localização da sua frota.</p>
+                                    </div>
+                                </div>
+                                <section class="movex-route-card" aria-label="Veículos alugados e localização da frota">
                                     <aside class="movex-route-sidebar">
                                         <div class="movex-route-heading">
-                                            <div>
-                                                <span class="movex-route-eyebrow">FROTA LOCADA</span>
-                                                <h2 id="movex-route-title">Ve&iacute;culos alugados</h2>
+                                            <div class="movex-fleet-search">
+                                                <i class="ri-search-line" aria-hidden="true"></i>
+                                                <label class="visually-hidden" for="rented-vehicle-search">Buscar veículos ou locatários</label>
+                                                <input id="rented-vehicle-search" type="search" placeholder="Buscar por locatário, placa ou modelo" autocomplete="off">
                                             </div>
                                             <span class="movex-route-count" id="rented-vehicle-count">0</span>
                                         </div>
