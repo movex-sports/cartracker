@@ -429,7 +429,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     studentsTableBody.innerHTML = currentStudents.map(function (vehicle) {
                         return `
-                            <tr>
+                            <tr data-vehicle-id="${escapeHtml(vehicle.id)}">
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
                                         <span class="avatar-xs rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center"><i class="ri-car-line"></i></span>
