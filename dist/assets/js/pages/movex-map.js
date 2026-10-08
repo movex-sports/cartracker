@@ -119,7 +119,7 @@
             var hasTelemetry = vehicle.status_id != null;
             return `<article class="movex-rented-card" tabindex="0" role="button" data-rented-index="${index}">
                 <div class="movex-rented-card-header">
-                    <span class="movex-rented-icon"><i class="ri-car-line"></i></span>
+                    <span class="movex-rented-icon">${vehicle.foto_thumb_url ? `<img src="${escapeHtml(vehicle.foto_thumb_url)}" alt="Foto de ${escapeHtml(vehicle.marca || "veículo")} ${escapeHtml(vehicle.modelo || "")}"><i class="ri-car-line d-none"></i>` : '<i class="ri-car-line"></i>'}</span>
                     <div class="movex-rented-title">
                         <strong>${escapeHtml(vehicle.placa || "Sem placa")}</strong>
                         <span>${escapeHtml([vehicle.marca, vehicle.modelo].filter(Boolean).join(" · "))}</span>
@@ -131,9 +131,17 @@
                     <span><small>Bateria</small><b>${formatNumber(vehicle.bateria, 1)}${vehicle.bateria == null ? "" : " V"}</b></span>
                     <span><small>Velocidade</small><b>${formatNumber(vehicle.velocidade, 0)}${vehicle.velocidade == null ? "" : " km/h"}</b></span>
                 </div>
-                <div class="movex-rented-meta"><span><i class="ri-map-pin-line me-1"></i>${hasCoordinates(vehicle) ? escapeHtml(formatNumber(vehicle.latitude, 5) + ", " + formatNumber(vehicle.longitude, 5)) : "Sem coordenadas"}</span><span>${escapeHtml(formatTelemetryDate(vehicle.registrado_em))}</span></div>
+                <div class="movex-rented-meta"><span><i class="ri-map-pin-line me-1"></i>${hasCoordinates(vehicle) ? escapeHtml(vehicle.coordenadas || (formatNumber(vehicle.latitude, 5) + ", " + formatNumber(vehicle.longitude, 5))) : "Sem coordenadas"}</span><span>${escapeHtml(formatTelemetryDate(vehicle.registrado_em))}</span></div>
             </article>`;
         }).join("");
+
+        list.querySelectorAll(".movex-rented-icon img").forEach(function (image) {
+            image.addEventListener("error", function () {
+                var fallback = image.nextElementSibling;
+                image.remove();
+                fallback?.classList.remove("d-none");
+            }, { once: true });
+        });
 
         if (selectedVehicleId) {
             var selectedIndex = vehicles.findIndex(function (vehicle) { return String(vehicle.veiculo_id) === selectedVehicleId; });
