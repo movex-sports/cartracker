@@ -100,7 +100,7 @@
             var renter = item.renter;
             return `<article class="movex-rented-card" tabindex="0" role="button" data-rented-index="${index}">
                 <div class="movex-rented-card-header">
-                    <span class="movex-rented-icon"><i class="ri-car-line"></i></span>
+                    <span class="movex-rented-icon">${vehicle.foto_thumb_url ? `<img src="${escapeHtml(vehicle.foto_thumb_url)}" alt="Foto de ${escapeHtml(vehicle.marca || "veículo")}" onerror="this.remove();this.nextElementSibling.classList.remove('d-none')"><i class="ri-car-line d-none"></i>` : '<i class="ri-car-line"></i>'}</span>
                     <div class="movex-rented-title">
                         <strong>${escapeHtml(vehicle.placa || "Sem placa")}</strong>
                         <span>${escapeHtml([vehicle.marca, vehicle.modelo, vehicle.ano, vehicle.cor].filter(Boolean).join(" · "))}</span>

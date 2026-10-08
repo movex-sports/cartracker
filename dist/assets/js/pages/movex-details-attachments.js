@@ -40,6 +40,7 @@
     var selectedPhotos = [];
     var existingPhotos = [];
     var currentVehicleId = null;
+    var photoRefreshTimer = null;
     var apiBaseUrl = "https://cartracker-api.onrender.com";
     var saveButton = document.getElementById("movex-save-attachments");
     var attachmentAlert = document.getElementById("movex-attachment-alert");
@@ -86,10 +87,29 @@
             var data = await response.json().catch(function () { return []; });
             if (!response.ok) throw new Error(apiMessage(data, "Não foi possível carregar as fotos."));
             existingPhotos = Array.isArray(data) ? data : [];
+            updateTableThumbnail(existingPhotos.find(function (photo) { return photo.thumb; })?.foto_url || "");
             renderPhotoPreviews();
+            window.clearTimeout(photoRefreshTimer);
+            photoRefreshTimer = window.setTimeout(loadVehiclePhotos, 14 * 60 * 1000);
         } catch (error) {
             existingPhotos = [];
             preview.innerHTML = '<div class="alert alert-danger grid-column-full mb-0">' + escapeHtml(error.message) + '</div>';
+        }
+    }
+
+    function updateTableThumbnail(url) {
+        var row = detailsBody?.querySelector('tr[data-vehicle-id="' + CSS.escape(String(currentVehicleId)) + '"]');
+        var holder = row?.querySelector(".movex-vehicle-thumb");
+        if (!holder) return;
+        holder.replaceChildren();
+        if (url) {
+            var image = document.createElement("img");
+            image.src = url;
+            image.alt = "Foto principal do veículo";
+            image.addEventListener("error", function () { holder.innerHTML = '<i class="ri-car-line"></i>'; }, { once: true });
+            holder.appendChild(image);
+        } else {
+            holder.innerHTML = '<i class="ri-car-line"></i>';
         }
     }
 
@@ -303,5 +323,9 @@
         }
     });
 
-    modalElement.addEventListener("hidden.bs.modal", clearPreviews);
+    modalElement.addEventListener("hidden.bs.modal", function () {
+        window.clearTimeout(photoRefreshTimer);
+        photoRefreshTimer = null;
+        clearPreviews();
+    });
 })();

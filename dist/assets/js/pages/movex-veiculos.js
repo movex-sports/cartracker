@@ -320,7 +320,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         tank: vehicle?.capacidade_tanque_l ?? "",
                         consumption: vehicle?.consumo_km_l ?? "",
                         maxSpeed: vehicle?.velocidade_maxima_kmh ?? "",
-                        odometer: vehicle?.odometro_km ?? 0
+                        odometer: vehicle?.odometro_km ?? 0,
+                        thumbnailUrl: vehicle?.foto_thumb_url ?? ""
                     };
                 }
 
@@ -432,7 +433,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             <tr data-vehicle-id="${escapeHtml(vehicle.id)}">
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <span class="avatar-xs rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center"><i class="ri-car-line"></i></span>
+                                        <span class="movex-vehicle-thumb bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center">${vehicle.thumbnailUrl ? `<img src="${escapeHtml(vehicle.thumbnailUrl)}" alt="Foto de ${escapeHtml(vehicle.brand)} ${escapeHtml(vehicle.model)}" onerror="this.remove();this.nextElementSibling.classList.remove('d-none')"><i class="ri-car-line d-none"></i>` : '<i class="ri-car-line"></i>'}</span>
                                         <div><strong class="d-block">${escapeHtml(vehicle.brand || "—")} ${escapeHtml(vehicle.model || "")}</strong><small class="text-muted">${escapeHtml(vehicle.color || "—")}</small></div>
                                     </div>
                                 </td>
