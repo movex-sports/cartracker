@@ -3,6 +3,7 @@
 
     var apiBaseUrl = "https://cartracker-api.onrender.com";
     var map;
+    var telemetryLayer;
 
     function getAccessToken() {
         return sessionStorage.getItem("movex_access_token") || sessionStorage.getItem("access_token") || "";
@@ -47,14 +48,20 @@
         return data?.message || fallback;
     }
 
-    function formatFuel(value) {
-        var labels = { gasolina: "Gasolina", etanol: "Etanol", flex: "Flex", diesel: "Diesel", eletrico: "Elétrico", hibrido: "Híbrido", gnv: "GNV" };
-        return labels[String(value || "").toLowerCase()] || value || "—";
+    function hasCoordinates(vehicle) {
+        return vehicle.latitude != null && vehicle.longitude != null && Number.isFinite(Number(vehicle.latitude)) && Number.isFinite(Number(vehicle.longitude));
     }
 
-    function renterAddress(renter) {
-        return [renter.locatario_rua, renter.locatario_numero, renter.locatario_bairro, renter.locatario_cidade, renter.locatario_estado]
-            .filter(Boolean).join(", ");
+    function formatNumber(value, decimals) {
+        if (value == null || value === "") return "—";
+        var number = Number(value);
+        return Number.isFinite(number) ? number.toLocaleString("pt-BR", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) : "—";
+    }
+
+    function formatTelemetryDate(value) {
+        if (!value) return "Sem telemetria";
+        var date = new Date(value);
+        return Number.isNaN(date.getTime()) ? "Sem telemetria" : date.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "medium" });
     }
 
     function initializeMap() {
@@ -70,54 +77,71 @@
             maxZoom: 19,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
+        telemetryLayer = L.layerGroup().addTo(map);
         map.fitWorld();
         setTimeout(function () { map.invalidateSize(); }, 100);
     }
 
-    function selectVehicle(card, vehicle, renter) {
+    function selectVehicle(card, vehicle) {
         document.querySelectorAll(".movex-rented-card").forEach(function (item) { item.classList.remove("is-selected"); });
         card.classList.add("is-selected");
         document.getElementById("map-vehicle-label").textContent = vehicle.placa || "VEÍCULO";
-        document.getElementById("map-vehicle-status").textContent = [vehicle.marca, vehicle.modelo, renter.locatario_nome].filter(Boolean).join(" · ") + " — sem coordenadas";
+        document.getElementById("map-vehicle-status").textContent = hasCoordinates(vehicle)
+            ? [vehicle.marca, vehicle.modelo, formatNumber(vehicle.velocidade, 0) + " km/h"].filter(Boolean).join(" · ")
+            : [vehicle.marca, vehicle.modelo, "Aguardando coordenadas"].filter(Boolean).join(" · ");
+        if (hasCoordinates(vehicle)) map.setView([Number(vehicle.latitude), Number(vehicle.longitude)], 16, { animate: true });
     }
 
-    function renderRentedVehicles(vehicles, renters) {
+    function renderRentedVehicles(vehicles) {
         var list = document.getElementById("rented-vehicle-list");
         var count = document.getElementById("rented-vehicle-count");
-        var vehicleById = new Map(vehicles.map(function (vehicle) { return [String(vehicle.veiculo_id), vehicle]; }));
-        var rented = renters.map(function (renter) {
-            return { renter: renter, vehicle: vehicleById.get(String(renter.veiculo_id)) };
-        }).filter(function (item) { return Boolean(item.vehicle); });
-
-        count.textContent = String(rented.length);
-        if (!rented.length) {
+        count.textContent = String(vehicles.length);
+        if (!vehicles.length) {
             list.innerHTML = '<div class="movex-rented-empty"><i class="ri-car-line fs-2 d-block mb-2"></i>Nenhum veículo alugado no momento.</div>';
             return;
         }
 
-        list.innerHTML = rented.map(function (item, index) {
-            var vehicle = item.vehicle;
-            var renter = item.renter;
+        list.innerHTML = vehicles.map(function (vehicle, index) {
+            var hasTelemetry = vehicle.status_id != null;
             return `<article class="movex-rented-card" tabindex="0" role="button" data-rented-index="${index}">
                 <div class="movex-rented-card-header">
-                    <span class="movex-rented-icon">${vehicle.foto_thumb_url ? `<img src="${escapeHtml(vehicle.foto_thumb_url)}" alt="Foto de ${escapeHtml(vehicle.marca || "veículo")}" onerror="this.remove();this.nextElementSibling.classList.remove('d-none')"><i class="ri-car-line d-none"></i>` : '<i class="ri-car-line"></i>'}</span>
+                    <span class="movex-rented-icon"><i class="ri-car-line"></i></span>
                     <div class="movex-rented-title">
                         <strong>${escapeHtml(vehicle.placa || "Sem placa")}</strong>
-                        <span>${escapeHtml([vehicle.marca, vehicle.modelo, vehicle.ano, vehicle.cor].filter(Boolean).join(" · "))}</span>
+                        <span>${escapeHtml([vehicle.marca, vehicle.modelo].filter(Boolean).join(" · "))}</span>
                     </div>
+                    <span class="movex-telemetry-dot ${hasTelemetry ? "is-online" : ""}" title="${hasTelemetry ? "Telemetria recebida" : "Sem telemetria"}"></span>
                 </div>
-                <div class="movex-rented-details">
-                    <span><i class="ri-user-3-line"></i><b>${escapeHtml(renter.locatario_nome)} ${escapeHtml(renter.locatario_sobrenome)}</b></span>
-                    <span><i class="ri-map-pin-line"></i><b>${escapeHtml(renterAddress(renter) || "Endereço não informado")}</b></span>
+                <div class="movex-telemetry-grid">
+                    <span><small>Ignição</small><b>${vehicle.ignicao == null ? "—" : vehicle.ignicao ? "Ligada" : "Desligada"}</b></span>
+                    <span><small>Bateria</small><b>${formatNumber(vehicle.bateria, 1)}${vehicle.bateria == null ? "" : " V"}</b></span>
+                    <span><small>Velocidade</small><b>${formatNumber(vehicle.velocidade, 0)}${vehicle.velocidade == null ? "" : " km/h"}</b></span>
                 </div>
-                <div class="movex-rented-meta"><span>${escapeHtml(formatFuel(vehicle.combustivel_tipo))}</span><span>Aguardando telemetria</span></div>
+                <div class="movex-rented-meta"><span><i class="ri-map-pin-line me-1"></i>${hasCoordinates(vehicle) ? escapeHtml(formatNumber(vehicle.latitude, 5) + ", " + formatNumber(vehicle.longitude, 5)) : "Sem coordenadas"}</span><span>${escapeHtml(formatTelemetryDate(vehicle.registrado_em))}</span></div>
             </article>`;
         }).join("");
 
+        if (telemetryLayer) {
+            telemetryLayer.clearLayers();
+            var bounds = [];
+            vehicles.forEach(function (vehicle, index) {
+                if (!hasCoordinates(vehicle)) return;
+                var point = [Number(vehicle.latitude), Number(vehicle.longitude)];
+                bounds.push(point);
+                var marker = L.circleMarker(point, { radius: 9, color: "#fff", weight: 3, fillColor: "#0ab39c", fillOpacity: 1 }).addTo(telemetryLayer);
+                marker.bindTooltip(escapeHtml(vehicle.placa || "Veículo"));
+                marker.on("click", function () {
+                    var card = list.querySelector('[data-rented-index="' + index + '"]');
+                    if (card) selectVehicle(card, vehicle);
+                });
+            });
+            if (bounds.length) map.fitBounds(bounds, { padding: [45, 45], maxZoom: 16 });
+            else map.fitWorld();
+        }
+
         list.querySelectorAll(".movex-rented-card").forEach(function (card) {
             function activate() {
-                var item = rented[Number(card.dataset.rentedIndex)];
-                selectVehicle(card, item.vehicle, item.renter);
+                selectVehicle(card, vehicles[Number(card.dataset.rentedIndex)]);
             }
             card.addEventListener("click", activate);
             card.addEventListener("keydown", function (event) {
@@ -129,12 +153,10 @@
     async function loadRentedVehicles() {
         var list = document.getElementById("rented-vehicle-list");
         try {
-            var responses = await Promise.all([fetchWithAuthentication("/veiculos"), fetchWithAuthentication("/locatarios")]);
-            var vehicles = await responses[0].json().catch(function () { return []; });
-            var renters = await responses[1].json().catch(function () { return []; });
-            if (!responses[0].ok) throw new Error(apiError(vehicles, "Não foi possível carregar os veículos."));
-            if (!responses[1].ok) throw new Error(apiError(renters, "Não foi possível carregar os locatários."));
-            renderRentedVehicles(Array.isArray(vehicles) ? vehicles : [], Array.isArray(renters) ? renters : []);
+            var response = await fetchWithAuthentication("/dados-crus/veiculos-alugados");
+            var vehicles = await response.json().catch(function () { return []; });
+            if (!response.ok) throw new Error(apiError(vehicles, "Não foi possível carregar os veículos alugados."));
+            renderRentedVehicles(Array.isArray(vehicles) ? vehicles : []);
         } catch (error) {
             list.innerHTML = '<div class="movex-rented-empty text-danger"><i class="ri-error-warning-line fs-2 d-block mb-2"></i>' + escapeHtml(error.message || "Não foi possível carregar a frota.") + '</div>';
         }

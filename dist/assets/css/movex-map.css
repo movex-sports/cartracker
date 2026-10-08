@@ -111,11 +111,18 @@
 .movex-rented-title { min-width: 0; flex: 1; }
 .movex-rented-title strong { display: block; font-size: .9rem; }
 .movex-rented-title span { display: block; margin-top: .1rem; color: var(--vz-secondary-color); font-size: .73rem; }
+.movex-telemetry-dot { flex: 0 0 9px; width: 9px; height: 9px; margin-top: .3rem; border-radius: 50%; background: #adb5bd; box-shadow: 0 0 0 4px rgba(173, 181, 189, .14); }
+.movex-telemetry-dot.is-online { background: #0ab39c; box-shadow: 0 0 0 4px rgba(10, 179, 156, .14); }
+.movex-telemetry-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .45rem; margin-top: .8rem; padding-top: .75rem; border-top: 1px solid var(--vz-border-color); }
+.movex-telemetry-grid span { min-width: 0; }
+.movex-telemetry-grid small { display: block; color: var(--vz-secondary-color); font-size: .62rem; }
+.movex-telemetry-grid b { display: block; margin-top: .15rem; overflow: hidden; color: var(--vz-body-color); font-size: .72rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .movex-rented-details { display: grid; gap: .45rem; margin-top: .8rem; padding-top: .75rem; border-top: 1px solid var(--vz-border-color); }
 .movex-rented-details span { display: flex; align-items: center; gap: .45rem; min-width: 0; color: var(--vz-secondary-color); font-size: .74rem; }
 .movex-rented-details i { color: var(--vz-body-color); font-size: .95rem; }
 .movex-rented-details b { overflow: hidden; color: var(--vz-body-color); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
-.movex-rented-meta { display: flex; justify-content: space-between; gap: .75rem; margin-top: .7rem; color: var(--vz-secondary-color); font-size: .68rem; }
+.movex-rented-meta { display: flex; justify-content: space-between; gap: .75rem; margin-top: .7rem; color: var(--vz-secondary-color); font-size: .65rem; }
+.movex-rented-meta span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .movex-rented-empty { padding: 2.5rem 1rem; border: 1px dashed var(--vz-border-color); border-radius: .75rem; color: var(--vz-secondary-color); text-align: center; }
 
 .movex-route-summary {
